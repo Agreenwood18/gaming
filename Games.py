@@ -12,6 +12,13 @@ from util import prompt_yes_or_no
 #           - maybe players should own wagers?
 #       -add statement for when you have zero balance
 
+
+#       design:
+#           - where should the A question go? and is it always called?
+#           - players can have a print method that handles nicer formatting (\n on both sides, etc)
+#               - helps a ton later when we want to do multiple terminals because players will see different output
+#           - we can finish this without asking the player at the end if they want to use ace as 11 or 1. We can assume the best hand
+
 #       -formating
 #           say you stayed or you hit
 #           see cards prior to deciding ace
@@ -25,7 +32,7 @@ from util import prompt_yes_or_no
 
 class Games:
     def __init__(self, num_players):
-        self.num_players =num_players
+        self.num_players = num_players
         self.current_game: Game = None
     
     def game_selecter(self):
@@ -40,26 +47,27 @@ class Games:
         self.current_game.start()
 
 class Game:
+    def __init__(self, name) -> None:
+        self.name = name
+
     def start(self):
         ## all games are responsible for returning out of this method when completed        
         raise ValueError("THIS IS AN INTERFACE. This method must be overidden")
 
 class Gamble(Game):
-    def __init__(self):
+    def __init__(self, name):
+        super().__init__(name)
         self.wager: Wager = Wager()
         self.wager.starting_Bal()
 
-    def keep_playing(self, wager):
-        ans = prompt_yes_or_no("Do you want to play again? ")
-        if ans:
-            print(f"Your current balance is: {wager}")
-            self.start()
-        else:
-            quit()
+    def keep_playing(self):
+        print(self.wager)
+        return prompt_yes_or_no(f"Do you still want to play {self.name}?")
+       
             
 class BlackJack(Gamble):
-    def __init__(self,numPlayers):
-        super().__init__()
+    def __init__(self, numPlayers):
+        super().__init__("BlackJack")
         self.deck = Deck(['A',2,3,4,5,6,7,8,9,10,'J','Q','K'], ['CLUB','HEART','SPADE','DIAMOND'], {"K": 10, "Q": 10, "J": 10, "A": -1})
         self.deck.shuffle()
         self.numPlayers = numPlayers
@@ -70,13 +78,18 @@ class BlackJack(Gamble):
         self.is_wagering = False
 
     def start(self):
-        if prompt_yes_or_no("Do you want to wager this round?"):
-            self.bet = self.wager.wagering()
-            self.is_wagering = True
-        else:
-            self.is_wagering = False
+        while self.keep_playing():
+            if prompt_yes_or_no("Do you want to wager this round?"):
+                self.wager.prompt_wager()
+                self.is_wagering = True
+            else:
+                self.is_wagering = False
 
-        self.start_round()
+            self.deal_hands()
+            self.play_round()
+
+            self.discard_hands()
+        
 
     # def keep_playing():
         
@@ -86,36 +99,27 @@ class BlackJack(Gamble):
         self.dealer.hand.clear()
 
     def player_turn(self, player: BlackJackPlayer):
-        def print_card_info():
-            print(f"\n{player}\n")
+        # OPTIONS:
+        #   player drew blackjack
+        #   player decides if they should hit no matter what after that (can't get over. even two A would have option to hit)
+        #   player is presented with their hand and prompted for a hit
+
+
+        # def print_card_info():
+        #     print(f"\nPlayer ({player})'s {player.hand}\n")
             
-        print_card_info()
+        # player_points = player.point_checker()
 
-        player_points = player.point_checker()
 
-        def print_points():
-            print(f"\t{player_points} total\n")
         
         did_hit = True
-        while did_hit and player_points <= 21:
-            print_points()
-            player_points, did_hit = player.hit(self.deck)
-            print_card_info()
-            print_points()
-            if player_points == 21:
-                print('Black Jack, you win')
-                if self.is_wagering:
-                    self.wager.won_bet(self.bet, 1.5)
-                    print("Your remaining Balance is: ")
-                    print(self.wager.balance)
-                self.keep_playing(self.wager.balance)
-            elif player_points > 21:
-                print("You Lose, Bust")
-                if self.is_wagering:
-                    self.wager.lost_bet(self.bet)
-                    print("Your remaining Balance is: ")
-                    print(self.wager.balance)
-                self.keep_playing(self.wager.balance)
+        while player.can_hit() and did_hit:
+            print(player)
+            did_hit = player.hit(self.deck)
+            if did_hit:
+                print(f"({player.id}) hit!\n\t drawn card: {self.hand.get_top()}")
+            
+
 
     def deal_hands(self):
         # 1 face up card to each player, 1 face down card to dealer, 1 face up card to each player, 1 face up card to dealer
@@ -134,58 +138,46 @@ class BlackJack(Gamble):
         id = input("Enter an ID number: ")
         self.players.append(BlackJackPlayer(id))
     
-    # def black_jack_checker(self, deck):
-    #     if
         
-    def start_round(self):
-        self.discard_hands()
-        self.deal_hands()
-        if self.players[0].has_blackjack():
-            print('Black Jack, you win')
-            if self.is_wagering:
-                self.wager.won_bet(self.bet, 1.5)
-                print("Your remaining Balance is: ")
-                print(self.wager.balance)
-            self.keep_playing(self.wager.balance)
+    def play_round(self):
         # all player turns
         for player in self.players:
             self.player_turn(player)
                 
         # dealer turn
-        print(self.dealer)
-        dealer_points = self.dealer.point_checker()
-        print(f"Dealer current points: {dealer_points}")
-        if dealer_points == 21:
-            print('Dealer got Black Jack')
-            if self.is_wagering:
-                self.wager.lost_bet(self.bet)
-            self.keep_playing(self.wager.balance)
-        if dealer_points > 21:
-            print("Dealer Busted")
-            if self.is_wagering:
-                self.wager.won_bet(self.bet,1)
-            self.keep_playing(self.wager.balance)
-        
-        # did_hit = True
-        # while did_hit:
-        dealer_points = self.dealer.hit(self.deck)
-        player_points = self.players[0].point_checker()
+        print("The dealer has drawn their second card\n\t", self.dealer.hand)
+        dealer_points = self.dealer.hit(self.deck) # hits until done
+        print("Dealer Stays")
 
-        # end of game
-        if player_points > player_points:
-            print("Player wins!!")
-            if self.is_wagering:
-                self.wager.won_bet(self.bet,1)
-                print("Your remaining Balance is: ")
-                print(self.wager.balance)
-            self.keep_playing(self.wager.balance)
-        elif player_points < dealer_points:
-            print("House wins :(")
-            if self.is_wagering:
-                self.wager.lost_bet(self.bet)
-                print("Your remaining Balance is: ")
-                print(self.wager.balance)
-            self.keep_playing(self.wager.balance)
-        elif player_points == dealer_points:
-            print("tie")
-            self.keep_playing(self.wager.balance)
+        # calculate scores
+        for player in self.players:
+            # ask the player what val they want their aces to be
+            player_points = player.point_checker() 
+
+            print(f"End of game:\n\t({player.id})'s points: {player_points}\tdealer's points: {dealer_points}")
+
+            # end of game
+            if player_points == 21:
+                print(f"Yea yea... ({player.id}) got a blackjack")
+                self.wager.won_bet(1.5)
+            elif player_points > 21:
+                print(f"({player.id}) busted...")
+                if self.is_wagering:
+                    self.wager.lost_bet()
+            elif dealer_points > 21:
+                print(f"({player.id}) got veryyy lucky... dealer busted with a {dealer_points}")
+                if self.is_wagering:
+                    self.wager.won_bet( 1)
+            elif player_points > dealer_points:
+                print(f"({player.id}) wins!!")
+                if self.is_wagering:
+                    self.wager.won_bet(1)
+            elif player_points < dealer_points:
+                print(f"House beat ({player.id}) :(")
+                if self.is_wagering:
+                    self.wager.lost_bet()
+            elif player_points == dealer_points:
+                print(f"Player ({player.id}) tied the dealer")
+            else:
+                print("what could have possibly happened here???")
+                

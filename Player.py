@@ -18,8 +18,8 @@ class Player():
     
 
 class BlackJackPlayer(Player):
-    def has_blackjack(self):
-        return int(self.hand) == 21
+    def can_hit(self):
+        return 21 > sum(int(c) if int(c) != -1 else 1 for c in self.hand)
 
     def ace_descision(self):
         #User chooses what value they want the ace to be
@@ -48,7 +48,7 @@ class BlackJackPlayer(Player):
             self.draw(deck)
             did_hit = True
 
-        return self.point_checker(), did_hit
+        return did_hit
 
 class BlackJackDealer(BlackJackPlayer):
     def __init__(self, id):
@@ -128,13 +128,6 @@ class BlackJackDealer(BlackJackPlayer):
         while current_points < 17:
             self.draw(deck)
             current_points = self.point_checker()
-        if current_points >= 17:
-            print("Dealer Stays")
-        # elif current_points < 17:
-        #     #did_hit = True
-        #     self.draw(deck)
-        # else:
-        #     print ("{self.point_checker}")
         
         return current_points#, did_hit
 

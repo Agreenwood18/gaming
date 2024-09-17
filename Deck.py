@@ -47,7 +47,9 @@ class Deck:
             current = self.cards[x]
             self.cards.pop(x)
             self.cards.insert(random.randrange(0,51),current)
-            
+    def __getitem__(self, key):
+        return self.cards[key]
+
     def __str__(self):
         #prints the current deck        
         return f"{", ".join([str(card) for card in self.cards])}"
@@ -56,7 +58,7 @@ class Deck:
         return self.cards.__iter__()
     
     def __len__(self):
-        return len(self.cards)
+        return self.cards.__len__()
     
     def __int__(self):
         return sum(self.cards)
