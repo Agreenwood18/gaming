@@ -5,10 +5,7 @@ from Player import BlackJackPlayer
 from Wager import Wager
 from util import prompt_yes_or_no
 
-
 ## TODO:
-
-
 #       - Wager
 #           - every player needs to be able to wager
 #           - wager should be persistant across each, turn, round, and even different games

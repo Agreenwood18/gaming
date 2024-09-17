@@ -26,9 +26,10 @@ class Deck:
         #This is base code for making a deck
         for rank in val: 
             for suit in suits:
-                c1= Card(rank, suit)
+                int_val = None
                 if rank in self.val_mapping:
-                    c1.int_val = self.val_mapping[rank]
+                    int_val = self.val_mapping[rank]
+                c1= Card(rank, suit, int_val=int_val)
                 self.cards.append(c1)
         
     def clear(self):
@@ -57,8 +58,11 @@ class Deck:
     def __len__(self):
         return len(self.cards)
     
+    def __int__(self):
+        return sum(self.cards)
+    
     def __add__(self, other):
-        return self.__int__ + other.__int__
+        return self.__int__() + other.__int__()
 
     def __radd__(self, other):
         return self.__add__(other)

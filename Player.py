@@ -19,7 +19,7 @@ class Player():
 
 class BlackJackPlayer(Player):
     def has_blackjack(self):
-        return sum(self.hand) == 21
+        return int(self.hand) == 21
 
     def ace_descision(self):
         #User chooses what value they want the ace to be
