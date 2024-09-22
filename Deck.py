@@ -17,10 +17,10 @@ class Deck:
         return self.cards[-1]
 
     def add_to_top(self, card: Card):
-        self.cards.insert(0, card)
+        self.cards.append(card)
 
     def add_to_bottom(self, card: Card):
-        self.cards.append(card)
+        self.cards.insert(0, card)
 
     def _build(self, val, suits): 
         #This is base code for making a deck

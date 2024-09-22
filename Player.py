@@ -1,10 +1,11 @@
 from Deck import Deck
-from util import prompt_yes_or_no
+from util import get_int_response, prompt_yes_or_no
 
 class Player():
-    def __init__(self,id):
+    def __init__(self, id):
         self.id = id
-        self.hand = Deck()
+        self.hand: Deck = Deck()
+        # self.bank: Bank = Bank() # MOVE TODO
 
     def draw(self, deck):
         #Draw a Card from the current deck
@@ -13,11 +14,11 @@ class Player():
     def __str__(self):
         #Display your hand
         return f"({self.id}) has {len(self.hand)} cards: {str(self.hand)}" 
-        
-
-    
 
 class BlackJackPlayer(Player):
+    def __init__(self, id):
+        super().__init__(id)
+
     def can_hit(self):
         return 21 > sum(int(c) if int(c) != -1 else 1 for c in self.hand)
 
@@ -25,7 +26,7 @@ class BlackJackPlayer(Player):
         #User chooses what value they want the ace to be
         a_point = 0
         while True:
-            a_point = int(input("Do you want your Ace to be worth 11 or 1? (enter your choice)").strip())
+            a_point = get_int_response("Do you want your Ace to be worth 11 or 1? ")
             if a_point == 11 or a_point == 1:
                 break
         return a_point
@@ -43,16 +44,15 @@ class BlackJackPlayer(Player):
         return points
 
     def hit(self, deck):
-        did_hit = False
         if prompt_yes_or_no("Hit or stay?"):
             self.draw(deck)
-            did_hit = True
+            return True
 
-        return did_hit
+        return False
 
 class BlackJackDealer(BlackJackPlayer):
-    def __init__(self, id):
-        super().__init__(id)
+    def __init__(self):
+        super().__init__("Dealer")
         self.has_decided_on_11 = False
     
     def point_checker(self):

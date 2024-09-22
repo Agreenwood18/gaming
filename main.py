@@ -1,16 +1,20 @@
-from Games import BlackJack
 from Games import Games
 from Player import Player
-from Player import BlackJackPlayer
-from Player import BlackJackDealer
-from Deck import Deck
-from Wager import Wager
+from Bank import Bank
+from util import get_int_response
+
+import Global
 
 def main():
-    player_num = int(input("How many people are playing: "))
-    all_games = Games(player_num)
+    Global.bank = Bank()
+
+    player_ids = []
+    for n in range(1, get_int_response("How many people are playing? ") + 1):
+        Global.bank.starting_Bal(n)
+        player_ids.append(n)
+
+    all_games = Games(player_ids)
     all_games.game_selecter()
 
 if __name__ == "__main__":
     main()
-
