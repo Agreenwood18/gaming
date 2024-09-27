@@ -2,9 +2,8 @@ from Deck import Deck
 from Player import Player
 from Player import BlackJackDealer
 from Player import BlackJackPlayer
-from util import print_chunk, prompt_yes_or_no, get_int_response
-
-import Global
+from Bookie import Bookie
+from util import print_chunk, prompt_yes_or_no
 
 ## TODO:
 #       - Wager
@@ -34,26 +33,6 @@ import Global
 #           - different server processes speaking to main server/game (better if we want to move this logic somewhere else later like a web app, but annoying to implement)
 #       - make game interface
 
-class Games:
-    def __init__(self, player_ids):
-        self.current_game: Game = None
-        self.player_ids: list = player_ids
-    
-    def game_selecter(self):
-        while True:
-            gameType = get_int_response("What game would you like to play? (select 1 to see list or enter the number of the game is you already know): ")
-            match gameType:
-                case 1:
-                    gameType = get_int_response("1 for repeat list, 2 for Black Jack")
-                    break
-                case 2:
-                    self.current_game = BlackJack(self.player_ids)
-                    break
-                case _:
-                    print(f"{gameType} is a whore for not being a game option.\n\tBut... unfortunately we can't do much about that (select again dumbass)\n")
-                    
-        self.current_game.start()
-
 class Game:
     def __init__(self, name) -> None:   
         self.name = name
@@ -65,6 +44,7 @@ class Game:
 class Gamble(Game):
     def __init__(self, name):
         super().__init__(name)
+        self.bookie = Bookie()
 
     def keep_playing(self):
         # TODO: ask about player their banks?
@@ -89,7 +69,7 @@ class BlackJack(Gamble):
         while True:
             for p in self.players:
                 if prompt_yes_or_no("Do you want to wager this round? "):
-                    Global.bank.prompt_wager(p.id)
+                    self.bookie.prompt_wager(p.id)
                     self.is_wagering = True
                 else:
                     self.is_wagering = False
@@ -169,23 +149,23 @@ class BlackJack(Gamble):
             # end of game
             if player_points == 21:
                 print(f"Yea yea... ({player.id}) got a blackjack")
-                Global.bank.won_bet(1.5, player.id)
+                self.bookie.won_bet(1.5, player.id)
             elif player_points > 21:
                 print(f"({player.id}) busted...")
                 if self.is_wagering:
-                    Global.bank.lost_bet(player.id)
+                    self.bookie.lost_bet(player.id)
             elif dealer_points > 21:
                 print(f"({player.id}) got veryyy lucky... dealer busted with a {dealer_points}")
                 if self.is_wagering:
-                    Global.bank.won_bet(1, player.id)
+                    self.bookie.won_bet(1, player.id)
             elif player_points > dealer_points:
                 print(f"({player.id}) wins!!")
                 if self.is_wagering:
-                    Global.bank.won_bet(1, player.id)
+                    self.bookie.won_bet(1, player.id)
             elif player_points < dealer_points:
                 print(f"House beat ({player.id}) :(")
                 if self.is_wagering:
-                    Global.bank.lost_bet(player.id)
+                    self.bookie.lost_bet(player.id)
             elif player_points == dealer_points:
                 print(f"Player ({player.id}) tied the dealer")
             else:

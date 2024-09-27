@@ -1,6 +1,6 @@
 from util import get_int_response
 
-class Bank():
+class Bookie():
     def __init__(self):
         # {player_id: [balance, current_bet]}
         self.player_dict = dict()
@@ -9,14 +9,6 @@ class Bank():
         # self.balance = 0
         self.minBal = 100
         self.maxBal = 300
-
-    def starting_Bal(self, id):
-        bal = get_int_response("What would you like your balance to be, (anywhere from 100 - 300): ")
-        while bal < self.minBal or bal > self.maxBal:
-            bal = get_int_response("That amount is not allowed, please select an amount between 100 and 300: ")
-
-        self.player_dict[id] = [bal, 0]
-        return bal
     
     def lost_bet(self, id):
         bal, cur_bet = self.player_dict[id]
