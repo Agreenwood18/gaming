@@ -41,18 +41,18 @@ class Game:
         ## all games are responsible for returning out of this method when completed        
         raise ValueError("THIS IS AN INTERFACE. This method must be overidden")
 
-class Gamble(Game):
-    def __init__(self, name):
+class GambleGame(Game):
+    def __init__(self, name) -> None:
         super().__init__(name)
-        self.bookie = Bookie()
+        self.bookie: Bookie = Bookie()
 
-    def keep_playing(self):
+    def keep_playing(self) -> bool:
         # TODO: ask about player their banks?
         return prompt_yes_or_no(f"Do you still want to play {self.name}?")
 
             
-class BlackJack(Gamble):
-    def __init__(self, player_ids):
+class BlackJack(GambleGame):
+    def __init__(self, player_ids) -> None:
         super().__init__("BlackJack")
         self.players: list[BlackJackPlayer] = []
         for id in player_ids:
@@ -130,7 +130,7 @@ class BlackJack(Gamble):
         print_chunk(f"The dealer has drawn.\n\ttop card: {self.dealer.hand.get_top()}, (hidden)")
         # print("The dealer has drawn their second card\n\t", self.dealer.hand)   
         
-    def play_round(self):
+    def play_round(self) -> None:
         # all player turns
         for player in self.players:
             self.player_turn(player)
@@ -149,23 +149,23 @@ class BlackJack(Gamble):
             # end of game
             if player_points == 21:
                 print(f"Yea yea... ({player.id}) got a blackjack")
-                self.bookie.won_bet(1.5, player.id)
+                self.bookie.cashout_win_loss(player.id, True, 1.5)
             elif player_points > 21:
                 print(f"({player.id}) busted...")
                 if self.is_wagering:
-                    self.bookie.lost_bet(player.id)
+                    self.bookie.cashout_win_loss(player.id, False)
             elif dealer_points > 21:
                 print(f"({player.id}) got veryyy lucky... dealer busted with a {dealer_points}")
                 if self.is_wagering:
-                    self.bookie.won_bet(1, player.id)
+                    self.bookie.cashout_win_loss(player.id, True, 1)
             elif player_points > dealer_points:
                 print(f"({player.id}) wins!!")
                 if self.is_wagering:
-                    self.bookie.won_bet(1, player.id)
+                    self.bookie.cashout_win_loss(player.id, True, 1)
             elif player_points < dealer_points:
                 print(f"House beat ({player.id}) :(")
                 if self.is_wagering:
-                    self.bookie.lost_bet(player.id)
+                    self.bookie.cashout_win_loss(player.id, False)
             elif player_points == dealer_points:
                 print(f"Player ({player.id}) tied the dealer")
             else:

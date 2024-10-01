@@ -2,6 +2,8 @@ import json
 from dataclasses import asdict, dataclass, is_dataclass
 import datetime
 
+from util import SingletonClass
+
 
 ###### TODO: names are not currently unique
 ##              and dates
@@ -34,7 +36,7 @@ class PlayerSave:
     date_ended: datetime
 
 
-class DatabaseManager:
+class DatabaseManager(SingletonClass):
     def __init__(self):
         ## cached of the active players being used (easier to do adjustments and call to other methods in the class. reduces reads)
         ## { unique_name: { __ attributes of PlayerSave __ } }
@@ -46,7 +48,7 @@ class DatabaseManager:
             return list(player_save_json)
 
     ## TODO: this player will stay in an array indefinitely (remove on logout)
-    def get_player_save(self, unique_name) -> PlayerSave:
+    def get_player_save(self, unique_name: str) -> PlayerSave:
         player_save: PlayerSave = None
 
         if unique_name in self.player_saves:
@@ -59,7 +61,7 @@ class DatabaseManager:
         
         return player_save
 
-    def create_player(self, unique_name, money=0) -> None:
+    def create_player(self, unique_name, money=0) -> PlayerSave:
         # t = datetime.datetime.now()
         t = 69
         player = PlayerSave(unique_name, money, t, t)

@@ -18,3 +18,10 @@ def get_int_response(question) -> int:
 
 def print_chunk(str="") -> None:
     print(str, "\n\n", sep="")
+
+
+class SingletonClass(object):
+  def __new__(cls):
+    if not hasattr(cls, 'instance'):
+      cls.instance = super(SingletonClass, cls).__new__(cls)
+    return cls.instance
