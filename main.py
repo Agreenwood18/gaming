@@ -2,7 +2,7 @@ from DatabaseManager import DatabaseManager, PlayerSave
 from GameManager import GameManager
 import util
 
-def starting_bal():
+def starting_bal() -> int:
     minBal, maxBal = 100, 300
     bal = util.get_int_response("What would you like your balance to be, (anywhere from 100 - 300): ")
     while bal < minBal or bal > maxBal:

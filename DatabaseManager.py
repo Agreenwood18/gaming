@@ -15,8 +15,7 @@ PLAYER_DB = 'players.json'
 
 
 class EnhancedJSONEncoder(json.JSONEncoder):
-    def default(self, o):
-
+    def default(self, o) -> any:
         if isinstance(o, (datetime.datetime, datetime.date, datetime.time)):
             return o.isoformat()
         elif isinstance(o, datetime.timedelta):
@@ -37,53 +36,52 @@ class PlayerSave:
 
 
 class DatabaseManager(SingletonClass):
-    def __init__(self):
-        ## cached of the active players being used (easier to do adjustments and call to other methods in the class. reduces reads)
+    def __init__(self) -> None:
+        ## cache of the active players being used (easier to do adjustments and call to other methods in the class. reduces reads)
         ## { unique_name: { __ attributes of PlayerSave __ } }
-        self.player_saves: dict = {}
+        self.player_saves_cache: dict = {}
 
-    def get_all_unique_names(self):
+    def get_all_unique_names(self) -> list[str]:
         with open(PLAYER_DB, 'r') as file:
             player_save_json: json = json.load(file)["players"]
             return list(player_save_json)
 
     ## TODO: this player will stay in an array indefinitely (remove on logout)
+    ## TODO: this should throw an error if player does not exist
     def get_player_save(self, unique_name: str) -> PlayerSave:
         player_save: PlayerSave = None
 
-        if unique_name in self.player_saves:
-            player_save = self.player_saves[unique_name]            
+        if unique_name in self.player_saves_cache:
+            player_save = self.player_saves_cache[unique_name]            
         else:
             with open(PLAYER_DB, 'r') as file:
                 player_save_json = json.load(file)["players"][unique_name]
                 player_save = PlayerSave(unique_name, player_save_json["money"], player_save_json["date_started"], player_save_json["date_ended"])
-                self.player_saves[unique_name] = player_save # add to cache
+                self.player_saves_cache[unique_name] = player_save
         
         return player_save
 
     def create_player(self, unique_name, money=0) -> PlayerSave:
         # t = datetime.datetime.now()
-        t = 69
+        t = datetime.datetime.now()
         player = PlayerSave(unique_name, money, t, t)
-        self.player_saves[unique_name] = player # add to cache
+        self.player_saves_cache[unique_name] = player
         self.save_player(unique_name)
         return player
 
+    # save just this player to json file (with the current date)
     def save_player(self, unique_name) -> None:
-        # save just this player to json file
         player_save = self.get_player_save(unique_name)
+        player_save.date_ended = datetime.datetime.now()
         with open(PLAYER_DB, "r+") as file:
 
             file_json = json.load(file)
             file_json["players"][unique_name] = asdict(player_save)
             
             
-            print("trying to write", file_json)
             file.seek(0)
-            json.dump(file_json, file, indent=4)
+            json.dump(file_json, file, indent=4, cls=EnhancedJSONEncoder)
             file.truncate()
-
-        # file.close()
 
     ## add or remove money in the database
     ## NOTE: on error returns -1. Otherwise it returns new balance
