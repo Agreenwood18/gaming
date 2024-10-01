@@ -83,6 +83,13 @@ class DatabaseManager(SingletonClass):
             json.dump(file_json, file, indent=4, cls=EnhancedJSONEncoder)
             file.truncate()
 
+    ## saves all currently cached players
+    def save_all(self) -> None:
+        print("saving all players")
+        for name in self.player_saves_cache.keys():
+            print("saving:", name)
+            self.save_player(name)
+
     ## add or remove money in the database
     ## NOTE: on error returns -1. Otherwise it returns new balance
     def adjust_money(self, increment: float, unique_name: str) -> int:

@@ -1,5 +1,6 @@
 from DatabaseManager import DatabaseManager, PlayerSave
 from GameManager import GameManager
+from User import User
 import util
 
 def starting_bal() -> int:
@@ -24,11 +25,11 @@ def main() -> any:
         print(save)
         player_ids.append(save.unique_name)
     
-
-    all_games: GameManager = GameManager(player_ids)
+    all_games: GameManager = GameManager([User(id) for id in player_ids])
     all_games.game_selecter()
 
-    print(f"game over...\n\n\n{DB_manager.get_player_save(player_ids[0])}")
+    DB_manager.save_all()
+
 
 if __name__ == "__main__":
     main()
