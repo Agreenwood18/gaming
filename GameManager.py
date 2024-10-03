@@ -22,7 +22,7 @@ class GameManager:
                     break
                 case 2:
                     player_ids: list[str | None] = [u.player_id for u in self.users]
-                    self.current_game = BlackJack(player_ids)
+                    self.current_game = BlackJack(player_ids, self.UI_controller)
                     break
                 case _:
                     print(f"{gameType} is a whore for not being a game option.\n\tBut... unfortunately we can't do much about that (select again dumbass)\n")

@@ -40,8 +40,8 @@ class Game:
         raise ValueError("THIS IS AN INTERFACE. This method must be overidden")
 
 class GambleGame(Game):
-    def __init__(self, name: str) -> None:
-        super().__init__(name)
+    def __init__(self, name: str, UI_controller: UIController) -> None:
+        super().__init__(name, UI_controller)
         self.bookie: Bookie = Bookie()
 
     def keep_playing(self) -> bool:
