@@ -22,12 +22,12 @@ def main() -> any:
         else:
             save = DB_manager.create_player(input("Enter the name of your new player").strip(), starting_bal())
             
-        print(save)
         player_ids.append(save.unique_name)
     
     all_games: GameManager = GameManager([User(id) for id in player_ids])
     all_games.game_selecter()
 
+    print("saving all active players")
     DB_manager.save_all()
 
 

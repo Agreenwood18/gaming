@@ -14,7 +14,7 @@ def get_int_response(question) -> int:
         if val.isdigit():
             print()
             return int(val)
-        val = input("please enter an integer value: ")
+        val = input("please enter an integer value: ").strip()
 
 class SingletonClass(object):
   def __new__(cls) -> any:

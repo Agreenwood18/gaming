@@ -3,7 +3,7 @@ from Player import Player
 from util import get_int_response, prompt_yes_or_no
 
 
-class BlackJackPlayer(Player):
+class BlackjackPlayer(Player):
     def __init__(self, id) -> None:
         super().__init__(id)
 
@@ -46,7 +46,7 @@ class BlackJackPlayer(Player):
 
         return False
 
-class BlackJackDealer(BlackJackPlayer):
+class BlackjackDealer(BlackjackPlayer):
     def __init__(self) -> None:
         super().__init__("Dealer")
 

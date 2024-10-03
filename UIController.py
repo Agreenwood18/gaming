@@ -12,9 +12,13 @@ class UIController:
         #TODO: for id in player_ids:
         print(self.__format_message(msg))
 
-    def broadcast_to_all(self, msg: str) -> None:
+    def broadcast_to_all(self, msg: any="") -> None:
         print(self.__format_message(msg))
 
     ## this is a private method that should not be accessed outside
-    def __format_message(self, str="") -> str:
-        return str + "\n\n"
+    def __format_message(self, msg: any) -> str:
+        end_str: str = "\n\n"
+        try:
+            return str(msg) + end_str
+        except:
+            return end_str

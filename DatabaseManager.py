@@ -4,14 +4,11 @@ import datetime
 
 from util import SingletonClass
 
-
 ###### TODO: names are not currently unique
 ##              and dates
 
 
-
 PLAYER_DB = 'players.json'
-
 
 
 class EnhancedJSONEncoder(json.JSONEncoder):
@@ -24,7 +21,6 @@ class EnhancedJSONEncoder(json.JSONEncoder):
             return asdict(o)
         return super().default(o)
 
-
 @dataclass
 class PlayerSave:
     ## NOTE: if we ever do nested dataclasses we need to do this: https://stackoverflow.com/questions/69059290/how-to-unpack-nested-json-into-python-dataclass
@@ -33,7 +29,6 @@ class PlayerSave:
     money: int
     date_started: datetime
     date_ended: datetime
-
 
 class DatabaseManager(SingletonClass):
     def __init__(self) -> None:
@@ -78,14 +73,12 @@ class DatabaseManager(SingletonClass):
             file_json = json.load(file)
             file_json["players"][unique_name] = asdict(player_save)
             
-            
             file.seek(0)
             json.dump(file_json, file, indent=4, cls=EnhancedJSONEncoder)
             file.truncate()
 
     ## saves all currently cached players
     def save_all(self) -> None:
-        print("saving all players")
         for name in self.player_saves_cache.keys():
             print("saving:", name)
             self.save_player(name)

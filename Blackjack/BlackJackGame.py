@@ -1,20 +1,20 @@
-from Blackjack.BlackJackPlayers import BlackJackDealer, BlackJackPlayer
+from Blackjack.BlackjackPlayers import BlackjackDealer, BlackjackPlayer
 from Deck import Deck
 from Game import GambleGame
-from util import print_chunk, prompt_yes_or_no
+from util import prompt_yes_or_no
 
 
-class BlackJack(GambleGame):
+class Blackjack(GambleGame):
     def __init__(self, player_ids, UI_controller) -> None:
         super().__init__("BlackJack", UI_controller)
-        self.players: list[BlackJackPlayer] = []
+        self.players: list[BlackjackPlayer] = []
         for id in player_ids:
-            self.players.append(BlackJackPlayer(id))
+            self.players.append(BlackjackPlayer(id))
 
         self.deck = Deck(['A',2,3,4,5,6,7,8,9,10,'J','Q','K'], ['CLUB','HEART','SPADE','DIAMOND'], {"K": 10, "Q": 10, "J": 10, "A": -1})
         self.deck.shuffle()
         
-        self.dealer: BlackJackDealer = BlackJackDealer()
+        self.dealer: BlackjackDealer = BlackjackDealer()
        
         self.is_wagering = False
 
@@ -27,7 +27,7 @@ class BlackJack(GambleGame):
                 else:
                     self.is_wagering = False
 
-            print_chunk("THE ROUND HAS BEGUN!!")
+            self.UI_controller.broadcast_to_all("THE ROUND HAS BEGUN!!")
 
             self.deal_hands()
             self.play_round()
@@ -45,7 +45,7 @@ class BlackJack(GambleGame):
             p.hand.clear()
         self.dealer.hand.clear()
 
-    def player_turn(self, player: BlackJackPlayer) -> None:
+    def player_turn(self, player: BlackjackPlayer) -> None:
        
         # TODO: write a blackjack checker method (check 1 or 11 options for A) and break/don't start loop if player has BJ
         did_hit = True
@@ -54,7 +54,7 @@ class BlackJack(GambleGame):
             did_hit = player.hit(self.deck)
             if did_hit:
                 self.UI_controller.broadcast_to_all(f"({player.id}) hit!\n\t drawn card: {player.hand.get_top()}")
-        print_chunk()
+        self.UI_controller.broadcast_to_all()
 
 
     def deal_hands(self) -> None:
@@ -68,7 +68,7 @@ class BlackJack(GambleGame):
             player.draw(self.deck)
 
         self.dealer.draw(self.deck)
-        print_chunk(f"The dealer has drawn.\n\ttop card: {self.dealer.hand.get_top()}, (hidden)")
+        self.UI_controller.broadcast_to_all(f"The dealer has drawn.\n\ttop card: {self.dealer.hand.get_top()}, (hidden)")
         
     def play_round(self) -> None:
         # all player turns
@@ -77,36 +77,44 @@ class BlackJack(GambleGame):
                 
         # dealer turn
         dealer_points = self.dealer.hit(self.deck) # hits until done
-        print_chunk(f"Dealer Stays\n\thand: {self.dealer.hand}")
+        self.UI_controller.broadcast_to_all(f"Dealer Stays\n\thand: {self.dealer.hand}")
 
         # calculate scores
         for player in self.players:
             # ask the player what val they want their aces to be
             player_points = player.get_score() 
 
-            print_chunk(f"Round over:\n\t({player.id})'s points: {player_points}\n\tdealer's points: {dealer_points}")
+            self.UI_controller.broadcast_to_all(f"Round over:\n\t({player.id})'s points: {player_points}\n\tdealer's points: {dealer_points}")
 
+            # TODO: after multiplayer, actually send individualized messages
             # end of game
             if player_points == 21:
-                print(f"Yea yea... ({player.id}) got a blackjack")
+                self.UI_controller.whisper_this_to(f"Yea yea... you got a blackjack", player.id)
+                # print(f"Yea yea... ({player.id}) got a blackjack")
                 self.bookie.cashout_win_loss(player.id, True, 1.5)
             elif player_points > 21:
-                print(f"({player.id}) busted...")
+                self.UI_controller.whisper_this_to(f"You busted...", player.id)
+                # print(f"({player.id}) busted...")
                 if self.is_wagering:
                     self.bookie.cashout_win_loss(player.id, False)
             elif dealer_points > 21:
-                print(f"({player.id}) got veryyy lucky... dealer busted with a {dealer_points}")
+                self.UI_controller.whisper_this_to(f"You got veryyy lucky... dealer busted with a {dealer_points}", player.id)
+                # print(f"({player.id}) got veryyy lucky... dealer busted with a {dealer_points}")
                 if self.is_wagering:
                     self.bookie.cashout_win_loss(player.id, True, 1)
             elif player_points > dealer_points:
-                print(f"({player.id}) wins!!")
+                self.UI_controller.whisper_this_to(f"You wins!!", player.id)
+                # print(f"({player.id}) wins!!")
                 if self.is_wagering:
                     self.bookie.cashout_win_loss(player.id, True, 1)
             elif player_points < dealer_points:
-                print(f"House beat ({player.id}) :(")
+                self.UI_controller.whisper_this_to(f"House beat you :(", player.id)
+                # print(f"House beat ({player.id}) :(")
                 if self.is_wagering:
                     self.bookie.cashout_win_loss(player.id, False)
             elif player_points == dealer_points:
-                print(f"Player ({player.id}) tied the dealer")
+                self.UI_controller.whisper_this_to(f"Player you tied the dealer", player.id)
+                # print(f"Player ({player.id}) tied the dealer")
             else:
-                print("what could have possibly happened here???")
+                self.UI_controller.whisper_this_to("what could have possibly happened here???", player.id)
+                # print("what could have possibly happened here???")
