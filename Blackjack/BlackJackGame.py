@@ -37,25 +37,20 @@ class Blackjack(GambleGame):
             if not self.keep_playing():
                 break
         
-
-    # def keep_playing():
-        
     def discard_hands(self) -> None:
         for p in self.players:
             p.hand.clear()
         self.dealer.hand.clear()
 
     def player_turn(self, player: BlackjackPlayer) -> None:
-       
         # TODO: write a blackjack checker method (check 1 or 11 options for A) and break/don't start loop if player has BJ
         did_hit = True
         while player.can_hit() and did_hit:
-            self.UI_controller.whisper_this_to(player, player.id)
+            self.UI_controller.whisper_this_to(f"Here are your {len(player.hand)} cards: {player.hand}", player.id)
             did_hit = player.hit(self.deck)
             if did_hit:
-                self.UI_controller.broadcast_to_all(f"({player.id}) hit!\n\t drawn card: {player.hand.get_top()}")
+                self.UI_controller.broadcast_to_all(f"{player} hit!\n\t drawn card: {player.hand.get_top()}")
         self.UI_controller.broadcast_to_all()
-
 
     def deal_hands(self) -> None:
         # 1 face up card to each player, 1 face down card to dealer, 1 face up card to each player, 1 face up card to dealer
@@ -84,37 +79,37 @@ class Blackjack(GambleGame):
             # ask the player what val they want their aces to be
             player_points = player.get_score() 
 
-            self.UI_controller.broadcast_to_all(f"Round over:\n\t({player.id})'s points: {player_points}\n\tdealer's points: {dealer_points}")
+            self.UI_controller.broadcast_to_all(f"Round over:\n\t{player}'s points: {player_points}\n\tdealer's points: {dealer_points}")
 
             # TODO: after multiplayer, actually send individualized messages
             # end of game
             if player_points == 21:
                 self.UI_controller.whisper_this_to(f"Yea yea... you got a blackjack", player.id)
-                # print(f"Yea yea... ({player.id}) got a blackjack")
+                # print(f"Yea yea... {player} got a blackjack")
                 self.bookie.cashout_win_loss(player.id, True, 1.5)
             elif player_points > 21:
                 self.UI_controller.whisper_this_to(f"You busted...", player.id)
-                # print(f"({player.id}) busted...")
+                # print(f"{player} busted...")
                 if self.is_wagering:
                     self.bookie.cashout_win_loss(player.id, False)
             elif dealer_points > 21:
                 self.UI_controller.whisper_this_to(f"You got veryyy lucky... dealer busted with a {dealer_points}", player.id)
-                # print(f"({player.id}) got veryyy lucky... dealer busted with a {dealer_points}")
+                # print(f"{player} got veryyy lucky... dealer busted with a {dealer_points}")
                 if self.is_wagering:
                     self.bookie.cashout_win_loss(player.id, True, 1)
             elif player_points > dealer_points:
                 self.UI_controller.whisper_this_to(f"You wins!!", player.id)
-                # print(f"({player.id}) wins!!")
+                # print(f"{player} wins!!")
                 if self.is_wagering:
                     self.bookie.cashout_win_loss(player.id, True, 1)
             elif player_points < dealer_points:
                 self.UI_controller.whisper_this_to(f"House beat you :(", player.id)
-                # print(f"House beat ({player.id}) :(")
+                # print(f"House beat {player} :(")
                 if self.is_wagering:
                     self.bookie.cashout_win_loss(player.id, False)
             elif player_points == dealer_points:
                 self.UI_controller.whisper_this_to(f"Player you tied the dealer", player.id)
-                # print(f"Player ({player.id}) tied the dealer")
+                # print(f"Player {player} tied the dealer")
             else:
                 self.UI_controller.whisper_this_to("what could have possibly happened here???", player.id)
                 # print("what could have possibly happened here???")
