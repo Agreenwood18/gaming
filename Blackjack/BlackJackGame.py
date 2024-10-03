@@ -82,7 +82,7 @@ class BlackJack(GambleGame):
         # calculate scores
         for player in self.players:
             # ask the player what val they want their aces to be
-            player_points = player.point_checker() 
+            player_points = player.get_score() 
 
             print_chunk(f"Round over:\n\t({player.id})'s points: {player_points}\n\tdealer's points: {dealer_points}")
 
