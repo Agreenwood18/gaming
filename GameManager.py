@@ -11,7 +11,7 @@ class GameManager:
     def __init__(self, users) -> None:
         self.current_game: Game = None
         self.users: list[User] = users
-        self.UI_controller: UIController = UIController(users)
+        self.UI_controller: UIController = UIController(users) ## in charge of keeping this current
     
     def game_selecter(self) -> None:
         while True:

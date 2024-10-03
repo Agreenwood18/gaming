@@ -10,7 +10,11 @@ class UIController:
     ## whisper to every player passed in
     def whisper_this_to(self, msg: str, *player_ids) -> None:
         #TODO: for id in player_ids:
-        print(msg)
+        print(self.__format_message(msg))
 
     def broadcast_to_all(self, msg: str) -> None:
-        print(msg)
+        print(self.__format_message(msg))
+
+    ## this is a private method that should not be accessed outside
+    def __format_message(self, str="") -> str:
+        return str + "\n\n"

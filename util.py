@@ -16,12 +16,8 @@ def get_int_response(question) -> int:
             return int(val)
         val = input("please enter an integer value: ")
 
-def print_chunk(str="") -> None:
-    print(str, "\n\n", sep="")
-
-
 class SingletonClass(object):
-  def __new__(cls):
+  def __new__(cls) -> any:
     if not hasattr(cls, 'instance'):
-      cls.instance = super(SingletonClass, cls).__new__(cls)
+      cls.instance: SingletonClass = super(SingletonClass, cls).__new__(cls)
     return cls.instance
