@@ -1,7 +1,6 @@
 from Blackjack.BlackjackPlayers import BlackjackDealer, BlackjackPlayer
 from Deck import Deck
 from Game import GambleGame
-from util import prompt_yes_or_no
 
 
 class Blackjack(GambleGame):
@@ -21,8 +20,8 @@ class Blackjack(GambleGame):
     def start(self) -> None:
         while True:
             for p in self.players:
-                if prompt_yes_or_no("Do you want to wager this round? "):
-                    self.bookie.prompt_wager(p.id)
+                if self.UI_controller.prompt_yes_or_no("Do you want to wager this round? ", p.id):
+                    self.bookie.prompt_wager(p.id, self.UI_controller)
                     self.is_wagering = True
                 else:
                     self.is_wagering = False
@@ -47,10 +46,9 @@ class Blackjack(GambleGame):
         did_hit = True
         while player.can_hit() and did_hit:
             self.UI_controller.whisper_this_to(f"Here are your {len(player.hand)} cards: {player.hand}", player.id)
-            did_hit = player.hit(self.deck)
+            did_hit = player.hit(self.deck, self.UI_controller)
             if did_hit:
                 self.UI_controller.broadcast_to_all(f"{player} hit!\n\t drawn card: {player.hand.get_top()}")
-        self.UI_controller.broadcast_to_all()
 
     def deal_hands(self) -> None:
         # 1 face up card to each player, 1 face down card to dealer, 1 face up card to each player, 1 face up card to dealer

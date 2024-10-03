@@ -1,5 +1,5 @@
 from DatabaseManager import DatabaseManager
-from util import get_int_response
+from UIController import UIController
 
 class Bookie():
     def __init__(self) -> None:
@@ -24,11 +24,11 @@ class Bookie():
         
         self.DB_manager.adjust_money(bet, player_id)   
     
-    def prompt_wager(self, player_id: str) -> None:
-        bet: int = get_int_response("How much would you like to wager? ")
+    def prompt_wager(self, player_id: str, UI_controller: UIController) -> None:
+        bet: int = UI_controller.get_int_response("How much would you like to wager? ", player_id)
         bal: int = self.DB_manager.get_player_save(player_id).money
         while bet > bal:
-            bet = get_int_response(f"You do not have enough in your balance to wager this amount (you have {bal}). ")
+            bet = UI_controller.get_int_response(f"You do not have enough in your balance to wager this amount (you have {bal}). ", player_id)
         
         self.player_dict[player_id] = bet
 

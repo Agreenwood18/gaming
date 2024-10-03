@@ -1,6 +1,5 @@
 from Bookie import Bookie
 from UIController import UIController
-from util import prompt_yes_or_no
 
 ## TODO:
 #       - Wager
@@ -46,5 +45,4 @@ class GambleGame(Game):
 
     def keep_playing(self) -> bool:
         # TODO: ask about player their banks?
-        return prompt_yes_or_no(f"Do you still want to play {self.name}?")
-                
+        return self.UI_controller.prompt_yes_or_no(f"Do you still want to play {self.name}?", "TODO: this will be different... with multiplayer!")
