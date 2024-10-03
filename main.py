@@ -19,10 +19,14 @@ def main() -> any:
     connected_user = User("unassigned_player")
     lobby_UI_controller.add_user(connected_user)
 
+    # user selects a player save
     save: PlayerSave | None = None
-    if lobby_UI_controller.prompt_yes_or_no(f"Is one of these you?\n\t{', '.join(DB_manager.get_all_unique_names())}\n", connected_user.player_id):
-        save = DB_manager.get_player_save(input("Enter the name").strip())
-    else:
+    player_options: list[str] = DB_manager.get_all_unique_names()
+    player_options.append("no. (create new)")
+    player_index: int = lobby_UI_controller.select_from_list(f"Is one of these you?", player_options, connected_user.player_id)
+    if player_index != len(player_options) - 1:
+        save = DB_manager.get_player_save(player_options[player_index])
+    else: # create new player
         save = DB_manager.create_player(input("Enter the name of your new player").strip(), starting_bal(lobby_UI_controller, connected_user.player_id))
         
     # user has chosen their player

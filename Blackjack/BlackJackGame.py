@@ -96,7 +96,7 @@ class Blackjack(GambleGame):
                 if self.is_wagering:
                     self.bookie.cashout_win_loss(player.id, True, 1)
             elif player_points > dealer_points:
-                self.UI_controller.whisper_this_to(f"You wins!!", player.id)
+                self.UI_controller.whisper_this_to(f"You win!!", player.id)
                 # print(f"{player} wins!!")
                 if self.is_wagering:
                     self.bookie.cashout_win_loss(player.id, True, 1)
@@ -106,8 +106,7 @@ class Blackjack(GambleGame):
                 if self.is_wagering:
                     self.bookie.cashout_win_loss(player.id, False)
             elif player_points == dealer_points:
-                self.UI_controller.whisper_this_to(f"Player you tied the dealer", player.id)
+                self.UI_controller.whisper_this_to(f"You tied the dealer", player.id)
                 # print(f"Player {player} tied the dealer")
             else:
-                self.UI_controller.whisper_this_to("what could have possibly happened here???", player.id)
-                # print("what could have possibly happened here???")
+                print("what could have possibly happened here???") # TODO: debug logging
