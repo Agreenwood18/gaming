@@ -8,6 +8,12 @@
             "money": 91.0,
             "date_started": "2024-10-01T00:45:12.260787",
             "date_ended": "2024-10-03T00:21:22.548884"
+        },
+        "Pro-Skiller": {
+            "unique_name": "Pro-Skiller",
+            "money": 182,
+            "date_started": "2024-10-03T22:35:05.207552",
+            "date_ended": "2024-10-03T22:40:23.930235"
         }
     }
 }
