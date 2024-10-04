@@ -3,6 +3,10 @@ from GameManager import GameManager
 from UIController import UIController
 from User import User
 
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), 'Blackjack'))
+
 def starting_bal(UI_controller, player_id) -> int:
     minBal, maxBal = 100, 300
     bal = UI_controller.get_int_response("What would you like your balance to be, (anywhere from 100 - 300): ", player_id)

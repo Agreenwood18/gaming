@@ -1,9 +1,9 @@
-from Blackjack.BlackjackPlayers import BlackjackDealer, BlackjackPlayer
+from BlackjackPlayers import BlackjackDealer, BlackjackPlayer
 from Deck import Deck
 from Game import GambleGame
 
 
-class Blackjack(GambleGame):
+class BlackjackGame(GambleGame):
     def __init__(self, player_ids, UI_controller) -> None:
         super().__init__("BlackJack", UI_controller)
         self.players: list[BlackjackPlayer] = []

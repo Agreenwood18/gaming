@@ -1,4 +1,4 @@
-from Blackjack.BlackjackGame import Blackjack
+from BlackjackGame import BlackjackGame
 from Game import Game
 from UIController import UIController
 from User import User
@@ -19,7 +19,7 @@ class GameManager:
             match games[gameType]:
                 case "Blackjack":
                     player_ids: list[str | None] = [u.player_id for u in self.users]
-                    self.current_game = Blackjack(player_ids, self.UI_controller)
+                    self.current_game = BlackjackGame(player_ids, self.UI_controller)
                     break
                 case _: # this should never be reached
                     print(f"{gameType} is a whore for not being a game option.\n\tBut... unfortunately we can't do much about that (select again dumbass)\n")
