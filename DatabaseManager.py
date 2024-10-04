@@ -1,6 +1,7 @@
 import json
 from dataclasses import asdict, dataclass, is_dataclass
 import datetime
+import threading
 
 from util import SingletonClass
 
@@ -35,11 +36,12 @@ class DatabaseManager(SingletonClass):
         ## cache of the active players being used (easier to do adjustments and call to other methods in the class. reduces reads)
         ## { unique_name: { __ attributes of PlayerSave __ } }
         self.player_saves_cache: dict = {}
+        self.__thread_lock: threading.Lock = threading.Lock() # now with thread safety! maybe? TODO: unit test it my man
 
     def get_all_unique_names(self) -> list[str]:
-        with open(PLAYER_DB, 'r') as file:
-            player_save_json: json = json.load(file)["players"]
-            return list(player_save_json)
+        with self.__thread_lock and open(PLAYER_DB, 'r') as file:
+                player_save_json: json = json.load(file)["players"]
+                return list(player_save_json)
 
     ## TODO: this player will stay in an array indefinitely (remove on logout)
     ## TODO: this should throw an error if player does not exist
@@ -49,7 +51,7 @@ class DatabaseManager(SingletonClass):
         if unique_name in self.player_saves_cache:
             player_save = self.player_saves_cache[unique_name]            
         else:
-            with open(PLAYER_DB, 'r') as file:
+            with self.__thread_lock and open(PLAYER_DB, 'r') as file:
                 player_save_json = json.load(file)["players"][unique_name]
                 player_save = PlayerSave(unique_name, player_save_json["money"], player_save_json["date_started"], player_save_json["date_ended"])
                 self.player_saves_cache[unique_name] = player_save
@@ -68,7 +70,7 @@ class DatabaseManager(SingletonClass):
     def save_player(self, unique_name) -> None:
         player_save = self.get_player_save(unique_name)
         player_save.date_ended = datetime.datetime.now()
-        with open(PLAYER_DB, "r+") as file:
+        with self.__thread_lock and open(PLAYER_DB, "r+") as file:
 
             file_json = json.load(file)
             file_json["players"][unique_name] = asdict(player_save)

@@ -37,7 +37,8 @@ def main() -> any:
     connected_user.player_id = save.unique_name
     
     all_games: GameManager = GameManager([connected_user])
-    all_games.game_selecter()
+    all_games.game_selector()
+    all_games.start_game()
 
     print("saving all active players")
     DB_manager.save_all()
