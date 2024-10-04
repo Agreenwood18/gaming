@@ -30,7 +30,7 @@ from UIController import UIController
 #       - make game interface
 
 class Game:
-    def __init__(self, name: str, player_ids, UI_controller: UIController) -> None:   
+    def __init__(self, name: str, UI_controller: UIController) -> None:   
         self.name: str = name
         self.UI_controller: UIController = UI_controller
         self.players = None
