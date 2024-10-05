@@ -3,8 +3,11 @@ from GameManager import GameManager
 from UIController import UIController
 from User import User
 
+import time
 import os
 import sys
+
+from UserRouter import UserRouter
 sys.path.append(os.path.join(os.path.dirname(__file__), 'Blackjack'))
 
 def starting_bal(UI_controller, player_id) -> int:
@@ -18,6 +21,17 @@ def starting_bal(UI_controller, player_id) -> int:
 def main() -> any:
     DB_manager: DatabaseManager = DatabaseManager() ## THE instance ;)
     lobby_UI_controller: UIController = UIController()
+
+
+
+    router = UserRouter()
+    router.start_listening() # start thread listening for new User connections
+
+    while True:
+        # print("main...")
+        time.sleep(10)
+
+
 
     # a user "connects" with their own terminal
     connected_user = User("unassigned_player")

@@ -13,8 +13,8 @@ class Bookie():
     def cashout_win_loss(self, player_id: str, has_won: bool, mult=1) -> None:
         bet: int | None = self.player_dict.get(player_id, None)
         if bet == None:
-            # TODO: do something else
-            raise ValueError(f"Player {player_id} did not have a bet")
+            return
+            # raise ValueError(f"Player {player_id} did not have a bet")
 
         if not has_won:
             bet *= -1
@@ -25,10 +25,10 @@ class Bookie():
         self.DB_manager.adjust_money(bet, player_id)   
     
     def prompt_wager(self, player_id: str, UI_controller: UIController) -> None:
-        bet: int = UI_controller.get_int_response("How much would you like to wager? ", player_id)
+        bet: int = UI_controller.create_msg("How much would you like to wager? ").whisper_to(player_id).waitfor_int()
         bal: int = self.DB_manager.get_player_save(player_id).money
         while bet > bal:
-            bet = UI_controller.get_int_response(f"You do not have enough in your balance to wager this amount (you have {bal}). ", player_id)
+            bet = UI_controller.create_msg(f"You do not have enough in your balance to wager this amount (you have {bal}). ").whisper_to(player_id).waitfor_int()
         
         self.player_dict[player_id] = bet
 

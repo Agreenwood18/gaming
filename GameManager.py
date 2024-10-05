@@ -8,12 +8,15 @@ from User import User
 ## We can kind of think of this like the lobby for users
 ## people will stay in here and play various games
 class GameManager:
-    def __init__(self, users: list[User], name: str="Gamers-club") -> None:
+    def __init__(self, users: list[User]=[], name: str="Gamers-club") -> None:
+        # self.__user_queue: queue.SimpleQueue[User] = queue.SimpleQueue()
+        # TODO: this ^^ is something...
+
         self.current_game: Game = None
         self.users: list[User] = users
         self.UI_controller: UIController = UIController(users) ## in charge of keeping this up to date
         self.__thread_lock: threading.Lock = threading.Lock() # now with thread safety! maybe? TODO: unit test it my man
-        self.lobby_name: str = name
+        self.name: str = name
 
     def add_user(self, user: User) -> None: # TODO: more logic...
         with self.__thread_lock:
@@ -31,23 +34,23 @@ class GameManager:
             actual_U_num: int = len(self.users)
             for i in range(actual_U_num - cur_user_num):
                 # new user joined!!
-                self.UI_controller.broadcast_to_all(f"EVERYBODY WELCOME {self.users[ -(i + 1) ].player_id}, the {cur_user_num + i + 1}th player to spend their time in \"{self.lobby_name}\"!!!")
+                self.UI_controller.create_msg(f"EVERYBODY WELCOME {self.users[ -(i + 1) ].player_id}, the {cur_user_num + i + 1}th player to spend their time in \"{self.name}\"!!!").broadcast().send()
             
             cur_user_num = actual_U_num
-            if cur_user_num and self.UI_controller.prompt_yes_or_no("This is a terrible way to do this!!! Continue loop to check for new user?", self.users[0]):
+            if cur_user_num and not self.UI_controller.create_msg("This is a terrible way to do this!!! Continue loop to check for new user?").whisper_to(self.users[0].player_id).waitfor_yes_no():
                 return
 
     def game_selector(self) -> None:
         while True:
             games: list[str] = ["Blackjack"]
-            gameType: int = self.UI_controller.select_from_list(f"What game would you like to play?", games, (self.users[0]).player_id)
+            gameType: int = self.UI_controller.create_msg("What game would you like to play?").whisper_to((self.users[0]).player_id).waitfor_selection(games)[0]
             match games[gameType]:
                 case "Blackjack":
                     player_ids: list[str | None] = [u.player_id for u in self.users]
                     self.current_game = BlackjackGame(player_ids, self.UI_controller)
                     break
                 case _: # this should never be reached
-                    self.UI_controller.broadcast_to_all(f"The developers should be ashamed that {gameType} is not a game option.\n\tBut... unfortunately we can't do much about that (select again dumbass)\n")
+                    self.UI_controller.create_msg(f"The developers should be ashamed that {gameType} is not a game option.\n\tBut... unfortunately we can't do much about that (select again dumbass)\n").broadcast().send()
                     
     def start_game(self) -> None:
         self.current_game.start()

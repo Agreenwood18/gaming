@@ -46,4 +46,4 @@ class GambleGame(Game):
 
     def keep_playing(self) -> bool:
         # TODO: ask about player their banks?
-        return self.UI_controller.prompt_yes_or_no(f"Do you still want to play {self.name}?", "TODO: this will be different... with multiplayer!")
+        return self.UI_controller.create_msg(f"Do you still want to play {self.name}?").broadcast().waitfor_yes_no() # TODO: this will be different... with multiplayer!
