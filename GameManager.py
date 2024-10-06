@@ -37,7 +37,7 @@ class GameManager:
                 self.UI_controller.create_msg(f"EVERYBODY WELCOME {self.users[ -(i + 1) ].player_id}, the {cur_user_num + i + 1}th player to spend their time in \"{self.name}\"!!!").broadcast().send()
             
             cur_user_num = actual_U_num
-            if cur_user_num and not self.UI_controller.create_msg("This is a terrible way to do this!!! Continue loop to check for new user?").whisper_to(self.users[0].player_id).waitfor_yes_no():
+            if cur_user_num and all(x == 1 for x in self.UI_controller.create_msg("uhhhh... everyone press 1 to start playing").broadcast().waitfor_int()):
                 return
 
     def game_selector(self) -> None:

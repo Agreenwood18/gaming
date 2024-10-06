@@ -42,7 +42,7 @@ class Game:
 class GambleGame(Game):
     def __init__(self, name: str, UI_controller: UIController) -> None:
         super().__init__(name, UI_controller)
-        self.bookie: Bookie = Bookie()
+        self.bookie: Bookie = Bookie(UI_controller)
 
     def keep_playing(self) -> bool:
         # TODO: ask about player their banks?

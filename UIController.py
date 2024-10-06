@@ -1,3 +1,5 @@
+import asyncio
+import threading
 from typing import Self
 from User import User
 from time import sleep
@@ -9,6 +11,10 @@ import datetime
 
 
 class UIController:
+    # NOTE using asycio to gather responses from users
+    #      because we are mostly waiting on slow I/O responses and its easy to handle results, because coroutines are in the same thread
+    #      threading module does not take advantage of multi-core processors (multiprocessing module can handle that)
+
     def __init__(self, users: list[User]=[], message_delay_s=1) -> None:
         self.__current_players_for_msg: list[str] = []
         self.__current_msg: str | None = None
@@ -109,17 +115,49 @@ class UIController:
 
     ## NOTE: not affected by time delay (usually things that need a response should be immediate)
     def waitfor_int(self, range_inclusive: tuple[int, int] | None = None) -> list[int | None]:
+        async def async_helper():
+
+            tasks: list[asyncio.Task] = []
+            for i, player_id in enumerate(self.__current_players_for_msg):
+                print(f"creating task {i+1}")
+                tasks.append(asyncio.create_task(self.__retry_until_int(self.__format_message(self.__current_msg), player_id, range_inclusive), name=i))
+
+            done: set[asyncio.Task]
+            pending: set[asyncio.Task]
+            print("waiting")
+            done, pending = await asyncio.wait(tasks, timeout=5) # TODO , timeout=5
+
+            for task in pending:
+                if not task.cancel():
+                    done.add(task)
+            
+            res: list[int | None] = [None] * len(self.__current_players_for_msg)
+            for task in done:
+                try:
+                    result = int(task.result())
+                    index = int(task.get_name())
+                    res[index] = result
+                except Exception as e:
+                    print(f"ERROR occurred... but why?: {e}")
+            
+            return res
+            
+
+        # val: int = self.__retry_until_int(self.__format_message(self.__current_msg), self.__current_players_for_msg[0], range_inclusive=range_inclusive)
+        
+
         self.__check_send_allowed()
 
-        # TODO: handle multiple players
-        val: int = self.__retry_until_int(self.__format_message(self.__current_msg), self.__current_players_for_msg[0], range_inclusive=range_inclusive)
-        
+        res: list[int | None] = asyncio.run(async_helper())
+
         self.__prepare_for_next_send()
-        return [val]
+
+        return res
 
     ##################### PRIVATE METHODS #####################
 
-    def __retry_until_int(self, formatted_msg: str, player_id: str, range_inclusive: tuple[int, int] | None = None) -> int:
+    async def __retry_until_int(self, formatted_msg: str, player_id: str, range_inclusive: tuple[int, int]) -> int:
+        print("retry inting with:", player_id)
         user: User = self.player_to_user_map[player_id]
         user.send_message(formatted_msg)
         val = user.receive_message()
@@ -140,7 +178,6 @@ class UIController:
     def __send_message(self) -> None | ValueError:
         pass
 
-    ## this is a private method that should not be accessed outside
     def __format_message(self, msg: any) -> str:
         end_str: str = "\n\n"
         try:
@@ -150,7 +187,7 @@ class UIController:
 
     def __sleep_until_delay(self) -> None:
         time_to_wait: datetime.timedelta = max(0, (self.__time_to_send_next - datetime.datetime.now()).total_seconds())
-        sleep(time_to_wait)
+        sleep(time_to_wait) # thread-safe
 
     def __prepare_for_next_send(self) -> None:
         self.__time_to_send_next = datetime.datetime.now() + datetime.timedelta(seconds=self.message_delay_s)

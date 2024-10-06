@@ -2,13 +2,9 @@ from DatabaseManager import DatabaseManager, PlayerSave
 from GameManager import GameManager
 from UIController import UIController
 from User import User
-
-import time
-import os
-import sys
-
 from UserRouter import UserRouter
-sys.path.append(os.path.join(os.path.dirname(__file__), 'Blackjack'))
+
+import asyncio
 
 def starting_bal(UI_controller, player_id) -> int:
     minBal, maxBal = 100, 300
@@ -18,7 +14,7 @@ def starting_bal(UI_controller, player_id) -> int:
 
     return bal
 
-def main() -> any:
+async def main() -> any:
     DB_manager: DatabaseManager = DatabaseManager() ## THE instance ;)
     lobby_UI_controller: UIController = UIController()
 
@@ -29,7 +25,7 @@ def main() -> any:
 
     while True:
         # print("main...")
-        time.sleep(10)
+        await asyncio.sleep(10)
 
 
 
@@ -59,4 +55,4 @@ def main() -> any:
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

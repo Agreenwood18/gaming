@@ -21,7 +21,7 @@ class BlackjackGame(GambleGame):
         while True:
             for p in self.players:
                 if self.UI_controller.create_msg("Do you want to wager this round?").whisper_to(p.id).waitfor_yes_no():
-                    self.bookie.prompt_wager(p.id, self.UI_controller)
+                    self.bookie.prompt_wager(p.id)
                     self.is_wagering = True
                 else:
                     self.is_wagering = False
