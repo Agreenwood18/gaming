@@ -15,16 +15,13 @@ class BlackjackGame(GambleGame):
         
         self.dealer: BlackjackDealer = BlackjackDealer()
        
-        self.is_wagering = False
 
     def start(self) -> None:
         while True:
             for p in self.players:
+                # TODO: broadcast obv... but there needs to be an easy way to map responses to players
                 if self.UI_controller.create_msg("Do you want to wager this round?").whisper_to(p.id).waitfor_yes_no():
                     self.bookie.prompt_wager(p.id)
-                    self.is_wagering = True
-                else:
-                    self.is_wagering = False
 
             self.UI_controller.delay_next(0).create_msg("THE ROUND HAS BEGUN!!").broadcast().send()
 

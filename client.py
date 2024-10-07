@@ -23,7 +23,7 @@ class Client:
                 self.is_running = False
                 self.client_socket.close()
                 break
-            self.client_socket.sendall(message.encode())
+            self.client_socket.sendall(message.encode('utf8'))
 
     def receive_messages(self) -> None:
         while self.is_running:

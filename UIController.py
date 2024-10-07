@@ -5,6 +5,7 @@ from User import User
 from time import sleep
 import datetime
 
+
 #TODO: add input() to this
 #TODO: add select from list to this
 #TODO: timeout waiting on player response (TCP)
@@ -21,6 +22,9 @@ class UIController:
         self.__time_to_send_next: datetime.datetime = datetime.datetime.now()
         self.message_delay_s: int = message_delay_s
         self.player_to_user_map: dict[str, User] = dict()
+
+        from UserRouter import UserRouter
+        self.router_loop: asyncio.AbstractEventLoop = UserRouter().loop
         for u in users:
             self.add_user(u)
 
@@ -76,7 +80,7 @@ class UIController:
         self.__sleep_until_delay()
         msg: str = self.__format_message(self.__current_msg)
         for player_id in self.__current_players_for_msg:
-            self.player_to_user_map[player_id].send_message(msg)
+            asyncio.run(self.player_to_user_map[player_id].send_message(msg))
 
         self.__prepare_for_next_send()
 
@@ -84,7 +88,7 @@ class UIController:
     def waitfor_selection(self, item_list: list) -> list[int | None]:
         # TODO: handle multiple players
         self.__current_msg += "".join([f"\n\t{i+1}. {item}" for i, item in enumerate(item_list)])
-        return [num - 1 for num in self.waitfor_int(range_inclusive=(1, len(item_list)))]
+        return [num - 1 if num != None else None for num in self.waitfor_int(range_inclusive=(1, len(item_list)))]
         
 
         while True:
@@ -95,7 +99,13 @@ class UIController:
     ## NOTE: not affected by time delay (usually things that need a response should be immediate)
     def waitfor_yes_no(self) -> list[bool | None]:
         # TODO: handle multiple players
-        self.__check_send_allowed()
+        # self.__check_send_allowed()
+
+        res = [x == 0 if x != None else x for x in self.waitfor_selection(["yes", "no"])]
+
+        # self.__prepare_for_next_send()
+        return res
+
         user: User = self.player_to_user_map[self.__current_players_for_msg[0]]
 
         res = False
@@ -117,6 +127,16 @@ class UIController:
     def waitfor_int(self, range_inclusive: tuple[int, int] | None = None) -> list[int | None]:
         async def async_helper():
 
+
+            # TODO: using a task group is safer and simpler: with task group as tg... asyncio.TaskGroup.create_task() 
+# async with asyncio.TaskGroup() as tg:
+#         task1 = tg.create_task(some_coro(...))
+#         task2 = tg.create_task(another_coro(...))
+#     print(f"Both tasks have completed now: {task1.result()}, {task2.result()}")
+
+
+
+
             tasks: list[asyncio.Task] = []
             for i, player_id in enumerate(self.__current_players_for_msg):
                 print(f"creating task {i+1}")
@@ -125,7 +145,7 @@ class UIController:
             done: set[asyncio.Task]
             pending: set[asyncio.Task]
             print("waiting")
-            done, pending = await asyncio.wait(tasks, timeout=5) # TODO , timeout=5
+            done, pending = await asyncio.wait(tasks) # TODO , timeout=5
 
             for task in pending:
                 if not task.cancel():
@@ -148,7 +168,16 @@ class UIController:
 
         self.__check_send_allowed()
 
-        res: list[int | None] = asyncio.run(async_helper())
+        res: list[int | None]
+
+        try:
+            my_loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
+            if my_loop == self.router_loop:
+                res = asyncio.run(async_helper())
+            else:
+                raise RuntimeError("go to exception!!")
+        except Exception:
+            res = asyncio.run_coroutine_threadsafe(async_helper(), self.router_loop).result()
 
         self.__prepare_for_next_send()
 
@@ -159,20 +188,20 @@ class UIController:
     async def __retry_until_int(self, formatted_msg: str, player_id: str, range_inclusive: tuple[int, int]) -> int:
         print("retry inting with:", player_id)
         user: User = self.player_to_user_map[player_id]
-        user.send_message(formatted_msg)
-        val = user.receive_message()
+        await user.send_message(formatted_msg)
+        val = await user.receive_message()
         # val = input(formatted_msg).strip()
         while True:
             if not val.isdigit():
-                user.send_message("please enter an integer value: ")
-                val = user.receive_message()
+                await user.send_message("please enter an integer value: ")
+                val = await user.receive_message()
                 # val = input("please enter an integer value: ").strip()
             elif range_inclusive == None or (range_inclusive != None and range_inclusive[0] <= int(val) <= range_inclusive[1]):
                 # success!
                 return int(val)
             else:
-                user.send_message(f"please enter an integer within this range: {range_inclusive}")
-                val = user.receive_message()
+                await user.send_message(f"please enter an integer within this range: {range_inclusive}")
+                val = await user.receive_message()
                 # val = input(f"please enter an integer within this range: {range}").strip()
 
     def __send_message(self) -> None | ValueError:

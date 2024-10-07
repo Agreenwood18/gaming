@@ -14,18 +14,18 @@ def starting_bal(UI_controller, player_id) -> int:
 
     return bal
 
-async def main() -> any:
+def main() -> any:
     DB_manager: DatabaseManager = DatabaseManager() ## THE instance ;)
-    lobby_UI_controller: UIController = UIController()
+    # lobby_UI_controller: UIController = UIController()
 
 
 
     router = UserRouter()
-    router.start_listening() # start thread listening for new User connections
-
-    while True:
+    asyncio.run(router.start_server()) # start listening for new User connections
+    while True: # NOTE NOPE if asyncio^
+        pass
         # print("main...")
-        await asyncio.sleep(10)
+        # asyncio.run( asyncio.sleep(10))
 
 
 
@@ -55,4 +55,5 @@ async def main() -> any:
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    # asyncio.run()
+    main()
