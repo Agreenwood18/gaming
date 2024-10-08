@@ -1,14 +1,60 @@
-import asyncio
-import threading
-from typing import Self
 from User import User
-from time import sleep
+from enum import Enum
+from typing import Self
+import asyncio
 import datetime
 
 
 #TODO: add input() to this
 #TODO: add select from list to this
 #TODO: timeout waiting on player response (TCP)
+
+class MessageResponse(Enum):
+    no_response = 0
+    int = 1
+    yes_no = 2
+    selection = 3
+
+class Message:
+    ## NOTE: if `whisper_to` is not specified, the msg will be broadcasted to all but the excluded
+
+    def __init__(self, msg: str) -> None:
+        ## NOTE msg is able to be modified with a builder method, because other methods rely on changing the users already existing str
+        self.msg: str = msg
+        self.whispers: list[str] = []
+        self.excluded: list[str] = []
+        self.range_inclusive: tuple[int, int] = tuple()
+        self.response_type: MessageResponse = MessageResponse.no_response
+    
+    ## whisper to each player passed in
+    def whisper_to(self, *player_ids:str) -> Self:
+        # TODO: what if player id isn't part of the controller?
+        self.whispers =  list(player_ids)
+        return self
+
+    ## NOTE only intended to be used without a whisper (to exclude from a broadcast)
+    def exclude(self, *player_ids:str) -> Self:
+        self.excluded = list(player_ids)
+        return self
+
+    def waitfor_int(self, range_inclusive: tuple[int, int] | None = None) -> Self:
+        self.msg += f" Between {range_inclusive[0]} and {range_inclusive[1]}" if range_inclusive != None else ""
+        self.range_inclusive = range_inclusive
+        self.response_type = MessageResponse.int
+        return self
+
+    def waitfor_yes_no(self) -> Self:
+        self.waitfor_selection(["yes", "no"])
+        self.response_type = MessageResponse.yes_no # after ^ waitfor_selection ^ call to overwrite that
+        return self
+
+    def waitfor_selection(self, item_list: list) -> Self:
+        self.msg += "".join([f"\n\t{i+1}. {item}" for i, item in enumerate(item_list)])
+        self.response_type = MessageResponse.selection
+        return self
+
+
+
 
 
 class UIController:
@@ -71,9 +117,48 @@ class UIController:
     def broadcast(self) -> Self:
         self.__current_players_for_msg = list(self.player_to_user_map.keys())
         return self
+    
+    def get_broadcast_list(self) -> list[str]:
+        temp: list[str] = self.__current_players_for_msg
+        self.broadcast()
+        res: list[str] = self.__current_players_for_msg
+        self.__current_players_for_msg = temp
+        return res
 
     ##################### SEND BUILT MESSAGE METHODS #####################
 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    ######### TODO TODO TODO TODO:
+    #                                           send() needs to -> list[tuple[str, None | any]]
+    #                                           orrrrr.... it returns self and you can call a results() method for it (its saved to self.)
+    #                                           this allows us to have helper methods chained like all(true), percent(true, .5), etc
+    #                                           take in *msgs, do them all in different asyncio's, calling some private __handle_msg
+    # for task in done:
+    #     try:
+    #         result = int(task.result())
+    #         index = int(task.get_name())
+    #         res[index] = result
+    #         print(f"Player {self.get_broadcast_list()[index]} just responded with int: {result}")
+    #     except Exception as e:
+    #         print(f"ERROR occurred... but why?: {e}")
+    
+    # return res
+    
     def send(self) -> None | ValueError:
         self.__check_send_allowed()
 
@@ -83,6 +168,36 @@ class UIController:
             asyncio.run(self.player_to_user_map[player_id].send_message(msg))
 
         self.__prepare_for_next_send()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     ## returns the index of the selected item from the list
     def waitfor_selection(self, item_list: list) -> list[int | None]:
@@ -123,9 +238,9 @@ class UIController:
         self.__prepare_for_next_send()
         return res
 
-    ## NOTE: not affected by time delay (usually things that need a response should be immediate)
     def waitfor_int(self, range_inclusive: tuple[int, int] | None = None) -> list[int | None]:
-        async def async_helper():
+        ## NOTE: not affected by time delay (usually things that need a response should be immediate)
+        async def async_helper() -> list[int | None]:
 
 
             # TODO: using a task group is safer and simpler: with task group as tg... asyncio.TaskGroup.create_task() 
@@ -133,7 +248,6 @@ class UIController:
 #         task1 = tg.create_task(some_coro(...))
 #         task2 = tg.create_task(another_coro(...))
 #     print(f"Both tasks have completed now: {task1.result()}, {task2.result()}")
-
 
 
 
@@ -148,6 +262,7 @@ class UIController:
             done, pending = await asyncio.wait(tasks) # TODO , timeout=5
 
             for task in pending:
+                # try to cancel all; if no task to cancel, it must be done
                 if not task.cancel():
                     done.add(task)
             
@@ -157,14 +272,12 @@ class UIController:
                     result = int(task.result())
                     index = int(task.get_name())
                     res[index] = result
+                    print(f"Player {self.get_broadcast_list()[index]} just responded with int: {result}")
                 except Exception as e:
                     print(f"ERROR occurred... but why?: {e}")
             
             return res
             
-
-        # val: int = self.__retry_until_int(self.__format_message(self.__current_msg), self.__current_players_for_msg[0], range_inclusive=range_inclusive)
-        
 
         self.__check_send_allowed()
 
@@ -186,21 +299,20 @@ class UIController:
     ##################### PRIVATE METHODS #####################
 
     async def __retry_until_int(self, formatted_msg: str, player_id: str, range_inclusive: tuple[int, int]) -> int:
-        print("retry inting with:", player_id)
         user: User = self.player_to_user_map[player_id]
         await user.send_message(formatted_msg)
         val = await user.receive_message()
         # val = input(formatted_msg).strip()
         while True:
             if not val.isdigit():
-                await user.send_message("please enter an integer value: ")
+                await user.send_message("please enter a number: ")
                 val = await user.receive_message()
                 # val = input("please enter an integer value: ").strip()
             elif range_inclusive == None or (range_inclusive != None and range_inclusive[0] <= int(val) <= range_inclusive[1]):
                 # success!
                 return int(val)
             else:
-                await user.send_message(f"please enter an integer within this range: {range_inclusive}")
+                await user.send_message(f"please enter a number within this range: {range_inclusive}")
                 val = await user.receive_message()
                 # val = input(f"please enter an integer within this range: {range}").strip()
 
@@ -216,7 +328,7 @@ class UIController:
 
     def __sleep_until_delay(self) -> None:
         time_to_wait: datetime.timedelta = max(0, (self.__time_to_send_next - datetime.datetime.now()).total_seconds())
-        sleep(time_to_wait) # thread-safe
+        asyncio.sleep(time_to_wait)
 
     def __prepare_for_next_send(self) -> None:
         self.__time_to_send_next = datetime.datetime.now() + datetime.timedelta(seconds=self.message_delay_s)

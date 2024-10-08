@@ -18,10 +18,11 @@ class BlackjackGame(GambleGame):
 
     def start(self) -> None:
         while True:
-            for p in self.players:
-                # TODO: broadcast obv... but there needs to be an easy way to map responses to players
-                if self.UI_controller.create_msg("Do you want to wager this round?").whisper_to(p.id).waitfor_yes_no():
-                    self.bookie.prompt_wager(p.id)
+            
+            ids = [p.id for p in self.players]
+            responses =  self.UI_controller.create_msg("Do you want to wager this round?").whisper_to(ids).waitfor_yes_no()
+            yes_ids = [id for id, res in zip(ids, responses) if res == True]
+            self.bookie.prompt_wager(yes_ids)
 
             self.UI_controller.delay_next(0).create_msg("THE ROUND HAS BEGUN!!").broadcast().send()
 
@@ -39,7 +40,6 @@ class BlackjackGame(GambleGame):
         self.dealer.hand.clear()
 
     def player_turn(self, player: BlackjackPlayer) -> None:
-        # TODO: write a blackjack checker method (check 1 or 11 options for A) and break/don't start loop if player has BJ
         did_hit = True
         while player.can_hit() and did_hit:
             self.UI_controller.create_msg(f"Here are your {len(player.hand)} cards: {player.hand}").whisper_to(player.id).send()
@@ -85,23 +85,19 @@ class BlackjackGame(GambleGame):
             elif player_points > 21:
                 self.UI_controller.create_msg(f"You busted...").whisper_to(player.id).send()
                 # print(f"{player} busted...")
-                if self.is_wagering:
-                    self.bookie.cashout_win_loss(player.id, False)
+                self.bookie.cashout_win_loss(player.id, False)
             elif dealer_points > 21:
                 self.UI_controller.create_msg(f"You got veryyy lucky... dealer busted with a {dealer_points}").whisper_to(player.id).send()
                 # print(f"{player} got veryyy lucky... dealer busted with a {dealer_points}")
-                if self.is_wagering:
-                    self.bookie.cashout_win_loss(player.id, True, 1)
+                self.bookie.cashout_win_loss(player.id, True, 1)
             elif player_points > dealer_points:
                 self.UI_controller.create_msg(f"You win!!").whisper_to(player.id).send()
                 # print(f"{player} wins!!")
-                if self.is_wagering:
-                    self.bookie.cashout_win_loss(player.id, True, 1)
+                self.bookie.cashout_win_loss(player.id, True, 1)
             elif player_points < dealer_points:
                 self.UI_controller.create_msg(f"House beat you :(").whisper_to(player.id).send()
                 # print(f"House beat {player} :(")
-                if self.is_wagering:
-                    self.bookie.cashout_win_loss(player.id, False)
+                self.bookie.cashout_win_loss(player.id, False)
             elif player_points == dealer_points:
                 self.UI_controller.create_msg(f"You tied the dealer").whisper_to(player.id).send()
                 # print(f"Player {player} tied the dealer")
