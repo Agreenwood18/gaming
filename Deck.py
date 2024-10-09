@@ -48,6 +48,32 @@ class Deck:
             self.cards.pop(x)
             self.cards.insert(random.randrange(0,51),current)
 
+    def num_only(self):
+        num_cards: list[str] = []
+        for card in self.cards:
+            if type(card.val)==int:
+                num_cards.append(str(card.val))
+            else:
+                num_cards.append(card.val)
+
+
+        print(num_cards)
+        return num_cards
+    
+    #used in go fish
+    def pair_search(self):
+        numcard = self.num_only()
+        pairs:Card = []
+        for i in range(len(numcard)):
+            for j in range(len(numcard)):
+                if i != j:
+                    if numcard[i]==numcard[j]:
+                        if pairs.count(self.cards[i]) == 0 and pairs.count(self.cards[j]) == 0:
+                            pairs.append(self.cards[i])
+                            pairs.append(self.cards[j])
+
+        return pairs       
+                
     def __getitem__(self, key):
         return self.cards[key]
 
@@ -69,7 +95,7 @@ class Deck:
 
     def __radd__(self, other):
         return self.__add__(other)
-        
+
 
 
 #This is test code
