@@ -1,5 +1,5 @@
 from Player import Player
-from UIController import UIController
+from UIController import Message, UIController
 
 
 class BlackjackPlayer(Player):
@@ -30,7 +30,7 @@ class BlackjackPlayer(Player):
         return recurse_helper(0, 0)
 
     def hit(self, deck, UI_controller: UIController) -> bool:
-        if UI_controller.create_msg("Hit or stay?").whisper_to(self.id).waitfor_yes_no():
+        if UI_controller.send(Message("Hit or stay?").whisper_to(self.id).waitfor_yes_no()).popitem()[1] == True:
             self.draw(deck)
             return True
 

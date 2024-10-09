@@ -1,8 +1,9 @@
 import queue
 import threading
+from typing import Any
 from BlackjackGame import BlackjackGame
 from Game import Game
-from UIController import UIController
+from UIController import Message, UIController
 from User import User
 
 
@@ -45,30 +46,30 @@ class GameManager:
                 new_user = self.__user_queue.get(True, 0.1)
                 # new user joined!!
                 self.users.append(new_user)
-                self.UI_controller.create_msg(f"EVERYBODY WELCOME {new_user.player_id}, the {len(self.users)}th player to spend their time in \"{self.name}\"!!!").broadcast().send()
+                self.UI_controller.send(Message(f"EVERYBODY WELCOME {new_user.player_id}, the {len(self.users)}th player to spend their time in \"{self.name}\"!!!"))
             except:
                 # no new users...
                 pass
 
-            if len(self.users) and all(x == 1 for x in self.UI_controller.create_msg("uhhhh... everyone press 1 to start playing").broadcast().waitfor_int()):
+            if len(self.users) and all(x == 1 for x in self.UI_controller.send(Message("You are in the lobby. everyone press 1 to start. Anything else to refresh").waitfor_int()).values()):
                 return
 
     def game_selector(self) -> None:
         while True:
             games: list[str] = ["Blackjack", "dummy option"]
-            gameType: list[int | None] = self.UI_controller.create_msg("What game would you like to play?").broadcast().waitfor_selection(games)
-            if not all(x==gameType[0] for x in gameType): # if not all the same
-                self.UI_controller.create_msg("You guys need to pick the same game... figur it out").broadcast().send()
+            gameTypes= self.UI_controller.send(Message("What game would you like to play?").waitfor_selection(games))
+            if len(set(gameTypes.values())) != 1: # if not all the same
+                self.UI_controller.send(Message("You guys need to pick the same game... figur it out"))
                 continue
 
             # they reached an agreement...
-            match games[gameType[0]]:
+            match games[gameTypes.popitem()[1]]:
                 case "Blackjack":
                     player_ids: list[str | None] = [u.player_id for u in self.users]
                     self.current_game = BlackjackGame(player_ids, self.UI_controller)
                     break
                 case _: # this should never be reached
-                    self.UI_controller.create_msg(f"The developers should be ashamed that {gameType} is not a game option.\n\tBut... unfortunately we can't do much about that (select again dumbass)\n").broadcast().send()
+                    self.UI_controller.send(Message(f"The developers should be ashamed that {gameTypes} is not a game option.\n\tBut... unfortunately we can't do much about that (select again dumbass)\n"))
                     
     def start_game(self) -> None:
         self.current_game.start()
