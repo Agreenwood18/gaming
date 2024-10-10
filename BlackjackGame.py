@@ -15,6 +15,7 @@ class BlackjackGame(GambleGame):
         self.deck.shuffle()
 
         self.dealer: BlackjackDealer = BlackjackDealer()
+        self.results: dict[str, int] = dict()
 
 
     def start(self) -> None:
@@ -40,13 +41,22 @@ class BlackjackGame(GambleGame):
             p.hand.clear()
         self.dealer.hand.clear()
 
+    def get_score_string(self, score: int) -> str:
+        return f"busted with a {score}" if score > 21 else "got blackjack!" if score == 21 else f"got {score}"
+
     def player_turn(self, player: BlackjackPlayer) -> None:
         did_hit = True
         while player.can_hit() and did_hit:
-            self.UI_controller.send(Message(f"Here are your {len(player.hand)} cards: {player.hand}").whisper_to(player.id))
+            self.UI_controller.send(Message(f"Here is your hand: {player.hand}").whisper_to(player.id))
             did_hit = player.hit(self.deck, self.UI_controller)
             if did_hit:
-                self.UI_controller.send(Message(f"{player} hit!\n\t drawn card: {player.hand.get_top()}"))
+                self.UI_controller.send(Message(f"{player} hit!\n\t their new hand: {player.hand}"))
+
+        score = player.get_score()
+        self.results[player.id] = score
+        result_str = self.get_score_string(score)
+        self.UI_controller.send(Message(f"You {result_str}!"))
+        self.UI_controller.send(Message(f"{player} {result_str}!").exclude(player.id))
 
     def deal_hands(self) -> None:
         # 1 face up card to each player, 1 face down card to dealer, 1 face up card to each player, 1 face up card to dealer
@@ -58,8 +68,11 @@ class BlackjackGame(GambleGame):
         for player in self.players:
             player.draw(self.deck)
 
+        hands = "\n\t".join([f"{p}'s hand: {p.hand}" for p in self.players])
+        self.UI_controller.send(Message(f"The dealer has dealt your hands:\n\n\t{hands}"))
+
         self.dealer.draw(self.deck)
-        self.UI_controller.send(Message(f"The dealer has drawn.\n\ttop card: {self.dealer.hand.get_top()}, (hidden)"))
+        self.UI_controller.send(Message(f"This is the dealer's hand.\n\ttop card: {self.dealer.hand.get_top()}, (hidden)"))
         
     def play_round(self) -> None:
         # all player turns
@@ -68,39 +81,31 @@ class BlackjackGame(GambleGame):
                 
         # dealer turn
         dealer_points = self.dealer.hit(self.deck) # hits until done
-        self.UI_controller.send(Message(f"Dealer Stays\n\thand: {self.dealer.hand}"))
+        result_str = self.get_score_string(dealer_points)
+        draw_num = len(self.dealer.hand) - 2
+        self.UI_controller.send(Message(f"The dealer hit {draw_num} time{'s' if draw_num!=1 else ''}, he {result_str}\n\thand: {self.dealer.hand}"))
 
         # calculate scores
         for player in self.players:
-            # ask the player what val they want their aces to be
-            player_points = player.get_score() 
+            player_points = self.results[player.id]
 
-            self.UI_controller.send(Message(f"Round over:\n\t{player}'s points: {player_points}\n\tdealer's points: {dealer_points}"))
-
-            # TODO: after multiplayer, actually send individualized messages
             # end of game
             if player_points == 21:
                 self.UI_controller.send(Message(f"Yea yea... you got a blackjack").whisper_to(player.id))
-                # print(f"Yea yea... {player} got a blackjack")
                 self.bookie.cashout_win_loss(player.id, True, 1.5)
             elif player_points > 21:
                 self.UI_controller.send(Message(f"You busted...").whisper_to(player.id))
-                # print(f"{player} busted...")
                 self.bookie.cashout_win_loss(player.id, False)
             elif dealer_points > 21:
-                self.UI_controller.send(Message(f"You got veryyy lucky... dealer busted with a {dealer_points}").whisper_to(player.id))
-                # print(f"{player} got veryyy lucky... dealer busted with a {dealer_points}")
+                self.UI_controller.send(Message(f"You got veryyy lucky... dealer busted with a {dealer_points}! He could have beat you").whisper_to(player.id))
                 self.bookie.cashout_win_loss(player.id, True, 1)
             elif player_points > dealer_points:
                 self.UI_controller.send(Message(f"You win!!").whisper_to(player.id))
-                # print(f"{player} wins!!")
                 self.bookie.cashout_win_loss(player.id, True, 1)
             elif player_points < dealer_points:
                 self.UI_controller.send(Message(f"House beat you :(").whisper_to(player.id))
-                # print(f"House beat {player} :(")
                 self.bookie.cashout_win_loss(player.id, False)
             elif player_points == dealer_points:
                 self.UI_controller.send(Message(f"You tied the dealer").whisper_to(player.id))
-                # print(f"Player {player} tied the dealer")
             else:
                 print("what could have possibly happened here???") # TODO: debug logging
