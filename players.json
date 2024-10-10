@@ -5,15 +5,15 @@
     "players": {
         "ppee": {
             "unique_name": "ppee",
-            "money": 91.0,
+            "money": 55.0,
             "date_started": "2024-10-01T00:45:12.260787",
-            "date_ended": "2024-10-08T19:23:55.167928"
+            "date_ended": "2024-10-09T18:16:11.286773"
         },
         "Pro-Skiller": {
             "unique_name": "Pro-Skiller",
             "money": 170,
             "date_started": "2024-10-03T22:35:05.207552",
-            "date_ended": "2024-10-08T22:08:34.595525"
+            "date_ended": "2024-10-09T17:51:38.383502"
         }
     }
 }

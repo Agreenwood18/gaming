@@ -19,6 +19,12 @@ class User:
     async def receive_message(self):
         try:
             return (await self.reader.read(1024)).decode()
+        
         except Exception as e:
-            print("Error receiving message:", e)
+            print(f"Error receiving message for {self.player_id}:", e)
             return None
+
+
+        # except asyncio.CancelledError:
+        #     print(f"Message successfully cancelled for {self.player_id}")
+        #     raise asyncio.CancelledError

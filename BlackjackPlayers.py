@@ -30,7 +30,8 @@ class BlackjackPlayer(Player):
         return recurse_helper(0, 0)
 
     def hit(self, deck, UI_controller: UIController) -> bool:
-        if UI_controller.send(Message("Hit or stay?").whisper_to(self.id).waitfor_yes_no()).popitem()[1] == True:
+        if UI_controller.send(Message("Hit or stay?").whisper_to(self.id).waitfor_selection(['hit', 'stay'])).popitem()[1] == 0:
+            # hit!
             self.draw(deck)
             return True
 

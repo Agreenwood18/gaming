@@ -18,7 +18,7 @@ class Client:
 
     def send_message(self) -> None:
         while self.is_running:
-            message = input() #"Enter message to send to the server (type 'exit' to quit): "
+            message = input()
             if message.lower() == 'exit':
                 self.is_running = False
                 self.client_socket.close()
@@ -44,7 +44,7 @@ class Client:
         self.connect()
         if self.is_running:
             # Start a thread to listen for messages from the server
-            receive_thread = threading.Thread(target=self.receive_messages)
+            receive_thread = threading.Thread(target=self.receive_messages, daemon=True)
             receive_thread.start()
 
             # Main thread sends messages

@@ -3,6 +3,7 @@ from GameManager import GameManager
 from UIController import UIController
 from User import User
 from UserRouter import UserRouter
+import myglobals
 
 import asyncio
 
@@ -20,7 +21,7 @@ def main() -> any:
 
 
 
-    router = UserRouter()
+    router: UserRouter = UserRouter()
     asyncio.run(router.start_server()) # start listening for new User connections
     while True: # NOTE NOPE if asyncio^
         pass

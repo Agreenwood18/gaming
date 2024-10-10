@@ -40,8 +40,8 @@ class DatabaseManager(SingletonClass):
 
     def get_all_unique_names(self) -> list[str]:
         with self.__thread_lock and open(PLAYER_DB, 'r') as file:
-                player_save_json: json = json.load(file)["players"]
-                return list(player_save_json)
+            player_save_json: json = json.load(file)["players"]
+            return list(player_save_json)
 
     ## TODO: this player will stay in an array indefinitely (remove on logout)
     ## TODO: this should throw an error if player does not exist

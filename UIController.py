@@ -5,6 +5,8 @@ from typing import Any, Callable, Optional, Self
 import asyncio
 import datetime
 
+from myglobals import myglobals
+
 
 #TODO: add input() to this
 #TODO: add select from list to this
@@ -77,12 +79,11 @@ class UIController:
         self.__time_to_send_next: datetime.datetime = datetime.datetime.now()
         self.message_delay_s: int = message_delay_s
         self.player_to_user_map: dict[str, User] = dict()
+        self.__active_tasks: list[asyncio.Task] = []
 
-        from UserRouter import UserRouter
-        self.router_loop: asyncio.AbstractEventLoop = UserRouter().loop
         for u in users:
             self.add_user(u)
-
+    
     def add_user(self, user: User) -> None:
         self.player_to_user_map[user.player_id] = user
 
@@ -167,14 +168,52 @@ class UIController:
 
         try:
             my_loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
-            if my_loop == self.router_loop:
-                res = asyncio.run(self.__send_concurrent_msgs(messages))
-            else:
-                raise RuntimeError("go to exception!!")
+            if my_loop == myglobals.router_loop:
+                raise RuntimeError("You should be awaiting async_send instead...")
         except Exception:
-            res = asyncio.run_coroutine_threadsafe(self.__send_concurrent_msgs(messages), self.router_loop).result()
+            pass
+
+        res = asyncio.run_coroutine_threadsafe(self.__send_concurrent_msgs(messages), myglobals.router_loop).result()
 
         self.__prepare_for_next_send()
+
+        print(f'\nmessage results for {[m.msg for m in messages]}. current players in UI: {self.player_to_user_map.keys()}\n\n', res, '\n\n')
+
+        return res
+    
+    async def async_send(self, *messages: Message) -> dict[str, Optional[Any]]:
+
+        # msg: str = self.__format_message(self.__current_msg)
+        # for player_id in self.__current_players_for_msg:
+        #     asyncio.run(self.player_to_user_map[player_id].send_message(msg))
+
+        if len(messages) == 1 and isinstance(messages[0], list):
+            # allow caller to pass in a list or comma separated Messages
+            messages = messages[0]
+
+        if not len(messages):
+            # probably passed in an empty list
+            return
+
+        self.__sleep_until_delay()
+
+        res: dict[str, Optional[Any]]
+
+
+        global myglobals
+        try:
+            my_loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
+            if my_loop == myglobals.router_loop:
+                res = await self.__send_concurrent_msgs(messages)
+            else:
+                raise RuntimeError("You should be calling send instead...")
+        except Exception as e:
+            raise RuntimeError("You should probably be calling send instead... here is the exception:", e)
+
+
+        self.__prepare_for_next_send()
+
+        print(f'\nmessage results for {[m.msg for m in messages]}. current players in UI: {self.player_to_user_map.keys()}\n\n', res, '\n\n')
 
         return res
 
@@ -195,7 +234,8 @@ class UIController:
 
 
 
-
+    def has_current_messages(self) -> bool:
+        return any(self.__active_tasks)
 
 
 
@@ -218,14 +258,10 @@ class UIController:
         #         task2 = tg.create_task(another_coro(...))
         #     print(f"Both tasks have completed now: {task1.result()}, {task2.result()}")
         
-        
-        self.__active_tasks: list[asyncio.Task] = []
-
         for msg in messages:
             ids_for_msg: set[str] = (msg.whispers if len(msg.whispers) else set(self.player_to_user_map.keys()))
             ids_for_msg = ids_for_msg - msg.excluded
             
-            print("going through these player ids:", ids_for_msg)
             for player_id in ids_for_msg:
             
                 match msg.response_type:
@@ -257,7 +293,9 @@ class UIController:
             else:
                 # empty response due to timeout ideally (or error?)
                 res[task.get_name()] = None
-        
+
+        self.__active_tasks = []
+
         for task in done:
             try:
                 result: Any = task.result()

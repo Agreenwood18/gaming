@@ -5,6 +5,7 @@ import asyncio
 
 from LobbyManager import LobbyManager
 from User import User
+from myglobals import myglobals
 from util import SingletonClass
 
 
@@ -12,9 +13,8 @@ class UserRouter(SingletonClass):
     def __init__(self, host='0.0.0.0', port=8080) -> None:
         self.host: str = host
         self.port: int = port
-        self.loop: asyncio.AbstractEventLoop
         # self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.__lobby_manager = LobbyManager()
+        self.__lobby_manager: LobbyManager = LobbyManager()
         self.__is_running: bool = False
 
     async def start_server(self) -> None:
@@ -35,7 +35,8 @@ class UserRouter(SingletonClass):
             
             return local_ip
         
-        self.loop = asyncio.get_event_loop()
+        global myglobals
+        myglobals.router_loop = asyncio.get_event_loop()
         self.server: asyncio.Server = await asyncio.start_server(self.__handle_client, self.host, self.port)
 
         # Get the actual local IP address
@@ -51,7 +52,7 @@ class UserRouter(SingletonClass):
     async def __handle_client(self, reader, writer) -> None:
         print(f"user connected. Passing to lobby manager")
         new_user = User(reader, writer, "NO_PLAYER")
-        self.__lobby_manager.manage_user(new_user)
+        await self.__lobby_manager.manage_user(new_user)
 
     # def __listen_for_connections(self) -> None:
     #     self.server_socket.bind((self.host, self.port))

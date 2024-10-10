@@ -59,17 +59,18 @@ class GameManager:
             games: list[str] = ["Blackjack", "dummy option"]
             gameTypes= self.UI_controller.send(Message("What game would you like to play?").waitfor_selection(games))
             if len(set(gameTypes.values())) != 1: # if not all the same
-                self.UI_controller.send(Message("You guys need to pick the same game... figur it out"))
+                self.UI_controller.send(Message("You guys need to pick the same game... figure it out"))
                 continue
 
             # they reached an agreement...
-            match games[gameTypes.popitem()[1]]:
+            choice = games[gameTypes.popitem()[1]]
+            match choice:
                 case "Blackjack":
                     player_ids: list[str | None] = [u.player_id for u in self.users]
                     self.current_game = BlackjackGame(player_ids, self.UI_controller)
                     break
                 case _: # this should never be reached
-                    self.UI_controller.send(Message(f"The developers should be ashamed that {gameTypes} is not a game option.\n\tBut... unfortunately we can't do much about that (select again dumbass)\n"))
+                    self.UI_controller.send(Message(f"The developers should be ashamed that {choice} is not a game option.\n\tBut... unfortunately you can't do anything about that! (select again and don't complain)\n"))
                     
     def start_game(self) -> None:
         self.current_game.start()
