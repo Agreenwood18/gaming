@@ -14,6 +14,18 @@
             "money": 170,
             "date_started": "2024-10-03T22:35:05.207552",
             "date_ended": "2024-10-09T17:51:38.383502"
+        },
+        "Tracy": {
+            "unique_name": "Tracy",
+            "money": 400,
+            "date_started": "2024-10-09T21:05:20.954709",
+            "date_ended": "2024-10-09T21:13:09.224817"
+        },
+        "Brael": {
+            "unique_name": "Brael",
+            "money": 400,
+            "date_started": "2024-10-09T21:05:24.221115",
+            "date_ended": "2024-10-09T21:13:12.230605"
         }
     }
 }

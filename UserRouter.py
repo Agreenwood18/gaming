@@ -40,7 +40,7 @@ class UserRouter(SingletonClass):
         self.server: asyncio.Server = await asyncio.start_server(self.__handle_client, self.host, self.port)
 
         # Get the actual local IP address
-        # print(f"My IP Address: {get_local_ip()}")
+        print(f"My IP Address: {get_local_ip()}")
 
         async with self.server:
             await self.server.serve_forever()

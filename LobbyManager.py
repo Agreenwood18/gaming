@@ -28,7 +28,11 @@ class LobbyManager(SingletonClass):
         if player_index != len(player_options) - 1:
             save = self.DB_manager.get_player_save(player_options[player_index])
         else: # create new player
-            save = self.DB_manager.create_player(input("Enter the name of your new player").strip(), self.starting_bal(temp_UI_controller, new_user.player_id))
+
+            print("new char creation")
+            new_p_id = ( await temp_UI_controller.async_send(Message("Enter the name of your new player").waitfor_string()) ).popitem()[1]
+            starting_bal = ( await temp_UI_controller.async_send(Message("What would you like your balance to be, (anywhere from 100 - 300): ").waitfor_int((100, 300))) ).popitem()[1]
+            save = self.DB_manager.create_player(new_p_id, starting_bal)
             
         # user has chosen their player
         new_user.start_using_player(save.unique_name)
@@ -40,13 +44,6 @@ class LobbyManager(SingletonClass):
         self.lobbies[list(self.lobbies.keys())[lobby_i]].add_user(new_user)
         # self.__get_or_create_lobby().add_user(new_user) TODOODODODOD TODO
 
-    def starting_bal(self, UI_controller: UIController, player_id) -> int:
-        minBal, maxBal = 100, 300
-        bal = UI_controller.waitfor_int("What would you like your balance to be, (anywhere from 100 - 300): ", player_id)
-        while bal < minBal or bal > maxBal:
-            bal = UI_controller.waitfor_int("That amount is not allowed, please select an amount between 100 and 300: ", player_id)
-
-        return bal
 
     def __get_or_create_lobby(self) -> GameManager:
         lobby_id = 99999 # TODO: make random and meaningful for multiple lobbies

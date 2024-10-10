@@ -17,6 +17,7 @@ class MessageResponse(Enum):
     int = 1
     yes_no = 2
     selection = 3
+    string = 4
 
 class Message:
     ## NOTE: if `whisper_to` is not specified, the msg will be broadcasted to all but the excluded
@@ -63,8 +64,10 @@ class Message:
         self.response_type = MessageResponse.selection
         self.range_inclusive = (1, len(item_list))
         return self
-
-
+    
+    def waitfor_string(self) -> Self:
+        self.response_type = MessageResponse.string
+        return self
 
 
 
@@ -115,21 +118,6 @@ class UIController:
 
     ##################### SEND BUILT MESSAGE METHODS #####################
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     ######### TODO TODO TODO TODO:
     #                                           send() needs to -> list[tuple[str, None | any]]
@@ -277,6 +265,9 @@ class UIController:
                         # return the index from the original selection list
                         yes_no_callback = lambda x:  int(int(x) - 1) if x != None else None
                         self.__active_tasks.append(asyncio.create_task(self.__retry_until_int(self.__format_message(msg.msg), player_id, msg.range_inclusive, final_type_callback=yes_no_callback), name=player_id))
+                    case MessageResponse.string:
+                        print("yep")
+                        self.__active_tasks.append(asyncio.create_task(self.__get_string(self.__format_message(msg.msg), player_id), name=player_id))
                     case _:
                         raise RuntimeError("WHATTT EVEN HAPPENED!")
 
@@ -305,6 +296,15 @@ class UIController:
                 print(f"ERROR occurred with task:\n{task}\n\n\tBut why?: {e}")
             
         return res
+
+    async def __get_string(self, formatted_msg: str, player_id: str) -> str | None:
+        user: User = self.player_to_user_map[player_id]
+        print(1)
+        await user.send_message(formatted_msg)
+        print(2)
+        r = await user.receive_message()
+        return r
+
 
 
     async def __retry_until_int(self, formatted_msg: str, player_id: str, range_inclusive: tuple[int, int], final_type_callback: Callable | None=None) -> int | Any:
