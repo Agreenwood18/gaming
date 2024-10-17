@@ -5,6 +5,8 @@ from MultiDeckPlayer import MultiDeckPlayer
 from UIController import UIController
 
 
+#TODO: makes the official rules work (4 of a kind)
+
 
 class GoFishGame(Game):
     def __init__(self, player_ids, UI_controller: UIController) -> None:
@@ -51,6 +53,8 @@ class GoFishGame(Game):
             MultiDeckPlayer.decks[0].appened(player.hand.remove(pairsInHand.pop()))
             MultiDeckPlayer.decks[0].appened(player.hand.remove(pairsInHand.pop()))
         self.UI_controller.whisper_this_to(f"You now have {len(player.hand)} cards remaining: {player.hand}", player.id)
+        self.UI_controller.select_from_list(f"Who would you like to ask:",self.players,player.id)
+        
         quit()
         
 
