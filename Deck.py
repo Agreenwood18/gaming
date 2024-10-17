@@ -61,9 +61,9 @@ class Deck:
         return num_cards
     
     #used in go fish
-    def pair_search(self):
+    def pair_search(self) -> list[Card] :
         numcard = self.num_only()
-        pairs:Card = []
+        pairs: list[Card] = []
         for i in range(len(numcard)):
             for j in range(len(numcard)):
                 if i != j:

@@ -43,7 +43,7 @@ class GoFishGame(Game):
         for player in self.players:
             self.player_turn(player)
     
-    def player_turn(self,player:MultiDeckPlayer) ->None:
+    def player_turn(self, player: MultiDeckPlayer) ->None:
         pairsInHand = player.hand.pair_search()
         self.UI_controller.whisper_this_to(f"YOUR TURN!!!! \t\n")
         self.UI_controller.whisper_this_to(f"Here are your {len(player.hand)} cards: {player.hand}", player.id)
