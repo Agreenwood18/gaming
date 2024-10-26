@@ -1,5 +1,5 @@
 class Card:
-    def __init__(self, val, suit, int_val = None):
+    def __init__(self, val: str | int, suit: str, int_val: int | None = None) -> None:
         ## int_val is decided on in the constructor
         ## int_val defaults to val
 
@@ -14,10 +14,10 @@ class Card:
             raise ValueError(f"need a value map key-val for {self.val}, instead of {int_val}")
 
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.val}({self.suit})"
     
-    def __int__(self):
+    def __int__(self) -> int:
         return self.int_val
     
     def __add__(self, other):

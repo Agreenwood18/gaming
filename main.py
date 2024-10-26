@@ -2,10 +2,10 @@ from DatabaseManager import DatabaseManager, PlayerSave
 from GameManager import GameManager
 from UIController import UIController
 from User import User
+from UserRouter import UserRouter
+import myglobals
 
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), 'Blackjack'))
+import asyncio
 
 def starting_bal(UI_controller, player_id) -> int:
     minBal, maxBal = 100, 300
@@ -17,7 +17,18 @@ def starting_bal(UI_controller, player_id) -> int:
 
 def main() -> any:
     DB_manager: DatabaseManager = DatabaseManager() ## THE instance ;)
-    lobby_UI_controller: UIController = UIController()
+    # lobby_UI_controller: UIController = UIController()
+
+
+
+    router: UserRouter = UserRouter()
+    asyncio.run(router.start_server()) # start listening for new User connections
+    while True: # NOTE NOPE if asyncio^
+        pass
+        # print("main...")
+        # asyncio.run( asyncio.sleep(10))
+
+
 
     # a user "connects" with their own terminal
     connected_user = User("unassigned_player")
@@ -37,11 +48,13 @@ def main() -> any:
     connected_user.player_id = save.unique_name
     
     all_games: GameManager = GameManager([connected_user])
-    all_games.game_selecter()
+    all_games.game_selector()
+    all_games.start_game()
 
     print("saving all active players")
     DB_manager.save_all()
 
 
 if __name__ == "__main__":
+    # asyncio.run()
     main()

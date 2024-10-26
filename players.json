@@ -5,15 +5,27 @@
     "players": {
         "ppee": {
             "unique_name": "ppee",
-            "money": 91.0,
+            "money": 55.0,
             "date_started": "2024-10-01T00:45:12.260787",
-            "date_ended": "2024-10-03T00:21:22.548884"
+            "date_ended": "2024-10-09T18:16:11.286773"
         },
         "Pro-Skiller": {
             "unique_name": "Pro-Skiller",
             "money": 232,
             "date_started": "2024-10-03T22:35:05.207552",
-            "date_ended": "2024-10-06T16:21:51.809447"
+            "date_ended": "2024-10-10T00:44:36.740950"
+        },
+        "Tracy": {
+            "unique_name": "Tracy",
+            "money": 400,
+            "date_started": "2024-10-09T21:05:20.954709",
+            "date_ended": "2024-10-09T21:13:09.224817"
+        },
+        "Brael": {
+            "unique_name": "Brael",
+            "money": 400,
+            "date_started": "2024-10-09T21:05:24.221115",
+            "date_ended": "2024-10-09T21:13:12.230605"
         }
     }
 }

@@ -1,5 +1,5 @@
 from Bookie import Bookie
-from UIController import UIController
+from UIController import Message, UIController
 
 ## TODO:
 #       - Wager
@@ -42,8 +42,8 @@ class Game:
 class GambleGame(Game):
     def __init__(self, name: str, UI_controller: UIController) -> None:
         super().__init__(name, UI_controller)
-        self.bookie: Bookie = Bookie()
+        self.bookie: Bookie = Bookie(UI_controller)
 
     def keep_playing(self) -> bool:
         # TODO: ask about player their banks?
-        return self.UI_controller.prompt_yes_or_no(f"Do you still want to play {self.name}?", "TODO: this will be different... with multiplayer!")
+        return any(x == True for x in self.UI_controller.send(Message(f"Do you still want to play {self.name}?").waitfor_yes_no()).values()) # TODO: this will be different... with multiplayer!

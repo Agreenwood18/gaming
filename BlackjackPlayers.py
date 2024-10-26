@@ -1,6 +1,5 @@
-from typing import override
 from Player import Player
-from UIController import UIController
+from UIController import Message, UIController
 
 
 class BlackjackPlayer(Player):
@@ -31,7 +30,8 @@ class BlackjackPlayer(Player):
         return recurse_helper(0, 0)
 
     def hit(self, deck, UI_controller: UIController) -> bool:
-        if UI_controller.prompt_yes_or_no("Hit or stay?", self.id):
+        if UI_controller.send(Message("Hit or stay?").whisper_to(self.id).waitfor_selection(['hit', 'stay'])).popitem()[1] == 0:
+            # hit!
             self.draw(deck)
             return True
 
@@ -41,7 +41,6 @@ class BlackjackDealer(BlackjackPlayer):
     def __init__(self) -> None:
         super().__init__("Dealer")
 
-    @override
     def hit(self, deck) -> int:
         current_points = self.get_score()
         
