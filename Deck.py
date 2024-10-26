@@ -15,6 +15,10 @@ class Deck:
 
     def get_top(self):
         return self.cards[-1]
+    
+    #needs to be implemented
+    def remove_specific_card(self, card:Card):
+        pass
 
     def add_to_top(self, card: Card):
         self.cards.append(card)

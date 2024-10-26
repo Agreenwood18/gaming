@@ -13,4 +13,3 @@ class MultiDeckPlayer(Player):
     @property
     def discard(self):
         return self.decks[0]
-    

@@ -48,12 +48,14 @@ class GoFishGame(Game):
         self.UI_controller.whisper_this_to(f"YOUR TURN!!!! \t\n")
         self.UI_controller.whisper_this_to(f"Here are your {len(player.hand)} cards: {player.hand}", player.id)
         self.UI_controller.whisper_this_to(f"You have {int(len(pairsInHand))/2} pairs in your hand.", player.id)
-        if len(pairsInHand)>0:
+        while len(pairsInHand)>0:
             self.UI_controller.whisper_this_to(f"The first instance of the pair will be removed and added to your victory pile")
-            MultiDeckPlayer.decks[0].appened(player.hand.remove(pairsInHand.pop()))
-            MultiDeckPlayer.decks[0].appened(player.hand.remove(pairsInHand.pop()))
+            player.decks[0].cards.append(player.hand.cards.remove(pairsInHand.pop()))
+            player.decks[0].cards.append(player.hand.cards.remove(pairsInHand.pop()))
         self.UI_controller.whisper_this_to(f"You now have {len(player.hand)} cards remaining: {player.hand}", player.id)
         self.UI_controller.select_from_list(f"Who would you like to ask:",self.players,player.id)
+        self.UI_controller.select_from_list(f"What card would you like to ask them for?",player.hand,player.id)
+
         
         quit()
         
