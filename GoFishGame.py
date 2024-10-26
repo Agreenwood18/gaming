@@ -53,9 +53,10 @@ class GoFishGame(Game):
             player.decks[0].cards.append(player.hand.cards.remove(pairsInHand.pop()))
             player.decks[0].cards.append(player.hand.cards.remove(pairsInHand.pop()))
         self.UI_controller.whisper_this_to(f"You now have {len(player.hand)} cards remaining: {player.hand}", player.id)
-        self.UI_controller.select_from_list(f"Who would you like to ask:",self.players,player.id)
+        self.UI_controller.select_from_list(f"Who would you like to ask:",[p for p in self.players if p.id != player.id],player.id)
         self.UI_controller.select_from_list(f"What card would you like to ask them for?",player.hand,player.id)
 
+        #TODO filter(func., )
         
         quit()
         
